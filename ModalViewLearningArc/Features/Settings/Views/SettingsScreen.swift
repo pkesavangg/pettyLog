@@ -34,6 +34,7 @@ struct SettingsScreen: View {
         .environmentObject(router)
         .environment(settingAggregateModel)
         .environment(CategoryAggregateModel(authModel: authModel))
+        .environment(TagAggregateModel(authModel: authModel))
         .accentColor(theme.primary)
     }
 }
@@ -73,22 +74,42 @@ private extension SettingsScreen {
     var configurationSection: some View {
         Section(header: Text(lang.configure).foregroundColor(theme.onSurface)) {
             Button {
-                router.navigate(to: .categoryList)
+                router.navigate(to: .categories)
             } label: {
                 HStack {
-                    Text("Categories")
+                    Text(CommonStrings.categories)
                         .foregroundColor(theme.onBackground)
                     Spacer()
 
                     Image(systemName: AppAssets.chevronRight)
                         .foregroundColor(theme.onSurface.opacity(0.5))
                 }
-
             }
             
-            NavigationLink(destination: CategoryListScreen()) {
-                Text("Tags")
-                    .foregroundColor(theme.onSurface)
+            Button {
+                router.navigate(to: .Tags)
+            } label: {
+                HStack {
+                    Text(CommonStrings.tags)
+                        .foregroundColor(theme.onBackground)
+                    Spacer()
+
+                    Image(systemName: AppAssets.chevronRight)
+                        .foregroundColor(theme.onSurface.opacity(0.5))
+                }
+            }
+            
+            Button {
+                router.navigate(to: .Theme)
+            } label: {
+                HStack {
+                    Text(CommonStrings.theme)
+                        .foregroundColor(theme.onBackground)
+                    Spacer()
+
+                    Image(systemName: AppAssets.chevronRight)
+                        .foregroundColor(theme.onSurface.opacity(0.5))
+                }
             }
         }
     }

@@ -10,7 +10,7 @@ import SwiftUI
 struct AddEditCategoryView: View {
     var existingCategory: CategoryModel? = nil
     
-    @State var selectedIcon: String = "fork.knife"
+    @State var selectedIcon: String = ""
     @State var categoryName: String = ""
     @State var showColorSelection: Bool = false
     @State var selectedColor: String = PaletteColor.defaultColor
@@ -18,6 +18,8 @@ struct AddEditCategoryView: View {
     @Environment(CategoryAggregateModel.self) var categoryModel
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject private var router: Router<SettingsRoute>
+    @State var isFormDirty: Bool = false
+    let lang = CategoryScreenStrings.self
     
     var displayColor: Color {
         UIColor(hex: selectedColor).map(Color.init) ?? .clear
@@ -27,32 +29,57 @@ struct AddEditCategoryView: View {
         existingCategory != nil
     }
     
+    var errorMessage: String {
+        let trimmed = categoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return ErrorMessages.Validation.emptyField
+        }
+        if trimmed.count > 15 {
+            return ErrorMessages.Validation.minLength(15)
+        }
+        return ""
+    }
+    
     var body: some View {
         VStack {
-            HStack {
-                Button { showColorSelection = true } label: {
-                    Circle()
-                        .fill(displayColor)
-                        .frame(width: 30, height: 30)
-                }
-                CustomTextField(text: $categoryName, placeholder: "Category Name", inputType: .text)
-                    .padding(.horizontal)
-                
-                if let existingCategory = existingCategory {
+            VStack {
+                HStack(alignment: .top) {
                     Button {
-                        Task {
-                            await categoryModel.deleteCategory(id: existingCategory.id)
-                            router.navigateBack()
-                        }
+                        showColorSelection = true
                     } label: {
-                        Image(systemName: "trash")
-                            .foregroundColor(theme.error)
+                        Circle()
+                            .fill(displayColor)
+                            .frame(width: 30, height: 30)
+                    }
+                    .padding(.top, .p10)
+                    VStack {
+                        CustomTextField(text: $categoryName, placeholder: lang.categoryFieldPlaceholder, inputType: .text,
+                                        isDirty: $isFormDirty)
+                        ValidationMessageView(message: errorMessage, show: isFormDirty)
+                        
+                    }
+                    .padding(.horizontal, .p10)
+
+                    
+                    if let existingCategory = existingCategory {
+                        Button {
+                            Task {
+                                await categoryModel.deleteCategory(id: existingCategory.id)
+                                router.navigateBack()
+                            }
+                        } label: {
+                            Image(systemName: AppAssets.trash)
+                                .foregroundColor(theme.error)
+                        }
+                        .padding(.top, .p10)
                     }
                 }
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
             
-            CategoryIconSelectionView(selectedIcon: $selectedIcon)
+            
+            
+            IconSelectionView(selectedIcon: $selectedIcon)
                 .padding(.top)
         }
         .padding(.top)
@@ -60,13 +87,13 @@ struct AddEditCategoryView: View {
         .sheet(isPresented: $showColorSelection) {
             ColorSelectionView(selectedColorId: $selectedColor)
         }
-        .navigationTitle(isEditing ? "Edit Category" : "Add Category")
+        .navigationTitle(lang.categoryTitle(isEdit: isEditing))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             // Cancel Button on the left
             ToolbarItem(placement: .navigationBarLeading) {
-                LinkButton(title: "Cancel".uppercased(), isDisabled: false) {
+                LinkButton(title: CommonStrings.cancel.uppercased(), isDisabled: false) {
                     router.navigateBack()
                 }
             }
@@ -79,8 +106,8 @@ struct AddEditCategoryView: View {
                     
                     // Save or Update button
                     LinkButton(
-                        title: isEditing ? "Update".uppercased() : "Save".uppercased(),
-                        isDisabled: categoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        title: isEditing ? CommonStrings.update.uppercased() : CommonStrings.save.uppercased(),
+                        isDisabled: errorMessage != "",
                     ) {
                         let category = CategoryModel(
                             id: existingCategory?.id ?? UUID().uuidString,
@@ -98,7 +125,6 @@ struct AddEditCategoryView: View {
                 }
             }
         }
-        
         .onAppear {
             if let category = existingCategory {
                 categoryName = category.name
@@ -109,97 +135,8 @@ struct AddEditCategoryView: View {
     }
 }
 
-
-extension Date {
-    func currentTimeMillis() -> Int64 {
-        return Int64(self.timeIntervalSince1970 * 1000)
-    }
-}
-
-
 #Preview {
     AddEditCategoryView()
         .environmentObject(ThemeManager.shared)
         .environment(CategoryAggregateModel(authModel: AuthAggregateModel()))
-}
-
-
-import SwiftUI
-
-struct PaletteColor: Codable, Identifiable {
-    let id: String
-    let name: String
-    
-    var color: Color {
-        return Color(UIColor(hex: id) ?? .clear)
-    }
-    
-    static var defaultColor: String {
-        return PaletteColor.all.first?.id ?? "#0B6623"
-    }
-    
-    static let all: [PaletteColor] = [
-        PaletteColor(id: "#0B6623", name: "Green"),
-        PaletteColor(id: "#B8E0E5", name: "Aqua"),
-        PaletteColor(id: "#B2C8E0", name: "Blue Gray"),
-        PaletteColor(id: "#F7E7B3", name: "Buttercream"),
-        PaletteColor(id: "#FE7968", name: "Coral"),
-        PaletteColor(id: "#E2E2E2", name: "Gray"),
-        PaletteColor(id: "#E6D9F7", name: "Lavender"),
-        PaletteColor(id: "#7EBE5E", name: "Lime"),
-        PaletteColor(id: "#FB6EF1", name: "Magenta"),
-        PaletteColor(id: "#A8E9D1", name: "Mint"),
-        PaletteColor(id: "#FFD1A1", name: "Peach"),
-        PaletteColor(id: "#87A8EB", name: "Periwinkle"),
-        PaletteColor(id: "#FAD1D1", name: "Pink"),
-        PaletteColor(id: "#B991F2", name: "Purple"),
-        PaletteColor(id: "#C5E2C4", name: "Sage"),
-        PaletteColor(id: "#D6BCAB", name: "Sand"),
-        PaletteColor(id: "#94DDFE", name: "Sky Blue"),
-        PaletteColor(id: "#FF9549", name: "Tangerine"),
-        PaletteColor(id: "#FEE250", name: "Yellow")
-    ]
-}
-
-
-struct ColorSelectionView: View {
-    @Environment(\.presentationMode) var presentationMode
-    @Environment(\.appTheme) private var theme
-    @Binding var selectedColorId: String // Track selected color
-    
-    var body: some View {
-        List {
-            ForEach(PaletteColor.all.indices, id: \.self) { index in
-                let colorItem = PaletteColor.all[index]
-                
-                HStack {
-                    Circle()
-                        .fill(colorItem.color)
-                        .frame(width: 30, height: 30)
-                    
-                    Text(colorItem.name)
-                        .frame(maxWidth: .infinity, alignment: .leading) // Align text
-                    
-                    if selectedColorId == colorItem.id { // Show checkmark if selected
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(theme.primary)
-                    }
-                }
-                .contentShape(Rectangle()) // Make entire row tappable
-                .onTapGesture {
-                    selectedColorId = colorItem.id
-                }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    presentationMode.wrappedValue.dismiss()
-                } label: {
-                    Text("done")
-                        .foregroundColor(theme.primary)
-                }
-            }
-        }
-    }
 }

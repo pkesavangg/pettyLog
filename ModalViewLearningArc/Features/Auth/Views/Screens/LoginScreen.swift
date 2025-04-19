@@ -14,8 +14,6 @@ struct LoginScreen: View {
     var body: some View {
         RoutingView(stack: $router.stack) {
             VStack {
-                // TODO: Need to remove ThemeSwitcher in future
-                ThemeSwitcher()
                 Spacer(minLength: 60)
                 
                 VStack(spacing: 16) {

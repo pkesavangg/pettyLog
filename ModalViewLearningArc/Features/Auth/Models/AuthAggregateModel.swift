@@ -30,7 +30,6 @@ final class AuthAggregateModel {
             Task {
                 try await loadLoggedInUser()
             }
-
         } catch {
             fatalError("❌ Failed to initialize ModelContainer: \(error)")
         }

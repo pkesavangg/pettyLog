@@ -14,7 +14,8 @@ final class CategoryAggregateModel {
     var categories: [CategoryModel] = []
     private let authModel: AuthAggregateModel
     private let service: CategoryService
-
+    var isLoading: Bool = true
+    
     init(authModel: AuthAggregateModel) {
         self.authModel = authModel
         self.service = CategoryService(userId: authModel.currentUser?.uid ?? "unknown")
@@ -24,11 +25,13 @@ final class CategoryAggregateModel {
     }
 
     func loadCategories() async {
+        isLoading = true
         do {
             categories = try await service.getCategories()
         } catch {
             print("Failed to load categories: \(error)")
         }
+        isLoading = false
     }
 
     func saveCategory(_ category: CategoryModel) async {

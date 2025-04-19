@@ -26,7 +26,7 @@ struct ThemeableModifier: ViewModifier {
         content.environment(\.appTheme, theme.palette)
     }
 
-    private func themeFrom(_ scheme: ColorScheme) -> AppColors.Theme {
+    private func themeFrom(_ scheme: AppColorScheme) -> AppColors.Theme {
         switch scheme {
         case .blue: return .blue
         case .red: return .red

@@ -8,18 +8,25 @@
 
 import SwiftUI
 
-struct CategoryIconSelectionView: View {
+struct IconSelectionView: View {
     @Environment(\.appTheme) private var theme
     @Binding var selectedIcon: String
-    
+
     private let icons = CategoryIconConstants.allIcons
-    
+
     private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
+
+    private func setDefaultValue() {
+        if selectedIcon.isEmpty,
+           let defaultIcon = icons.first?.iconName {
+            selectedIcon = defaultIcon
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -45,23 +52,19 @@ struct CategoryIconSelectionView: View {
                             selectedIcon = icons[index].iconName
                         }
                     }
+                    .onAppear(perform: setDefaultValue)
                 }
             }
             .padding()
         }
         .frame(minHeight: 400)
         .cornerRadius(20)
-        .onAppear {
-            if !icons.map(\.iconName).contains(selectedIcon),
-               let icon = icons.first {
-                selectedIcon = icon.iconName
-            }
-        }
     }
 }
 
 
+
 #Preview {
-    CategoryIconSelectionView(selectedIcon: .constant("fork.knife"))
+    IconSelectionView(selectedIcon: .constant("fork.knife"))
         .environmentObject(ThemeManager.shared)
 }

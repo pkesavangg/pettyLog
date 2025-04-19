@@ -21,8 +21,13 @@ struct CommonStrings {
     static let home = "Home"
     static let settings = "Settings"
     static let categories = "Categories"
+    static let tags = "Tags"
     static let entry = "Entry"
     static let yes = "Yes"
+    static let update = "Update"
+    static let theme = "Theme"
+    static let done = "Done"
+    static let selectColor = "Select Color"
 }
 
 // MARK: Alert Messages
@@ -43,6 +48,11 @@ struct ErrorMessages {
         static let emailRequired = "Email is required."
         static let invalidEmail = "Please enter a valid email."
         static let passwordRequired = "Password is required."
+        static let emptyField = "This field cannot be empty."
+        static let mustBeAtLeast6Characters = "Must be less than 15 characters"
+        static func minLength(_ length: Int = 6) -> String {
+            return "Must be less than \(length) characters"
+        }
     }
 
     struct Auth {
@@ -75,6 +85,28 @@ struct SettingScreenStrings {
 struct CategoryScreenStrings {
     static let title = "Categories"
     static let createNewCategory = "Create New Category"
+    static let categoryFieldPlaceholder = "Enter category name"
+    static func categoryTitle(isEdit: Bool) -> String {
+        return isEdit ? "Edit Category" : "Create Category"
+    }
+}
+
+// MARK: - TagScreenStrings.swift
+struct TagScreenStrings {
+    static let title = "Tags"
+    static let createNewTag = "Create New Tag"
+    static let tagFieldPlaceholder = "Enter tag name"
+    static func tagTitle(isEdit: Bool) -> String {
+        return isEdit ? "Edit Tag" : "Create Tag"
+    }
+    static let emptyTagList = "No tags available"
+}
+
+// MARK: - ThemeScreenStrings.swift
+struct ThemeScreenStrings {
+    static let title = "Themes"
+    static let themeColor = "Theme Color"
+    static let appearance = "Appearance"
 }
 
 // MARK: - AppAssets.swift
@@ -89,4 +121,6 @@ struct AppAssets {
     static let personCrop = "person.crop.circle"
     static let plus = "plus"
     static let chevronRight = "chevron.right"
+    static let trash = "trash"
+    static let checkmark = "checkmark"
 }

@@ -13,9 +13,9 @@ struct CustomTextField: View {
     @Binding var text: String
     var placeholder: String = CommonStrings.defaultPlaceholder
     var inputType: InputType = .text
-
     @State private var isSecure: Bool = true
-
+    var isDirty: Binding<Bool>? = nil
+    
     var body: some View {
         HStack {
             // MARK: - Field type rendering
@@ -53,6 +53,11 @@ struct CustomTextField: View {
                     Image(systemName: isSecure ? AppAssets.eyeIcon : AppAssets.eyeSlashIcon)
                         .foregroundColor(theme.onSurface.opacity(0.6))
                 }
+            }
+        }
+        .onChange(of: text) { _ in
+            if let isDirty = isDirty, !isDirty.wrappedValue {
+                isDirty.wrappedValue = true
             }
         }
         .padding(.all, .p12)

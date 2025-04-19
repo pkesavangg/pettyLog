@@ -1,5 +1,5 @@
 //
-//  CategoryListScreen.swift
+//  CategoryScreen.swift
 //  ModalViewLearningArc
 //
 //  Created by Kesavan Panchabakesan on 15/04/25.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CategoryListScreen: View {
+struct CategoryScreen: View {
     @Environment(CategoryAggregateModel.self) var categoryModel
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var router: Router<SettingsRoute>
@@ -15,7 +15,7 @@ struct CategoryListScreen: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            List {
+            RedactableList(isLoading: categoryModel.isLoading, placeholderCount: 5) {
                 ForEach(categoryModel.categories) { category in
                     Button {
                         router.navigate(to: .addEditCategory(category))
@@ -31,12 +31,9 @@ struct CategoryListScreen: View {
                                         .frame(width: 10, height: 10)
                                         .foregroundColor(theme.onPrimary)
                                 }
-                            
                             Text(category.name)
                                 .foregroundColor(theme.onSurface)
-                            
                             Spacer()
-                            
                             Image(systemName: AppAssets.chevronRight)
                                 .foregroundColor(theme.onSurface.opacity(0.5))
                         }
@@ -44,7 +41,6 @@ struct CategoryListScreen: View {
                     }
                 }
             }
-            
             Button {
                 router.navigate(to: .addEditCategory(nil))
             } label: {
@@ -67,13 +63,12 @@ struct CategoryListScreen: View {
         .background(LinearGradient(colors: [theme.primary.opacity(0.2), .white], startPoint: .top, endPoint: .bottom))
         .navigationTitle(lang.title)
         .navigationBarTitleDisplayMode(.inline)
-        .redacted(reason: categoryModel.categories.count < 1 ? .placeholder : [])
     }
 }
 
 
 #Preview {
-    CategoryListScreen()
+    CategoryScreen()
         .environment(CategoryAggregateModel(authModel: AuthAggregateModel()))
         .environmentObject(ThemeManager.shared)
         .environmentObject(Router<SettingsRoute>())
