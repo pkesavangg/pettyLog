@@ -9,11 +9,14 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @Environment(AuthAggregateModel.self) var authModel
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
     @StateObject var router: Router<SettingsRoute> = .init()
     var settingAggregateModel: SettingsAggregateModel = .init()
     
     @State private var showLogoutAlert = false
+    var lang = SettingScreenStrings.self
+    var commonLang = CommonStrings.self
+    var alertLang = AlertMessages.Logout.self
     
     var body: some View {
         RoutingView(stack: $router.stack) {
@@ -24,24 +27,30 @@ struct SettingsScreen: View {
                     otherOptionsSection
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(CommonStrings.settings)
+            .scrollContentBackground(.hidden)
+            .background(LinearGradient(colors: [theme.primary.opacity(0.2), .white], startPoint: .top, endPoint: .bottom))
         }
         .environmentObject(router)
         .environment(settingAggregateModel)
+        .environment(CategoryAggregateModel(authModel: authModel))
+        .accentColor(theme.primary)
     }
 }
 
-
 private extension SettingsScreen {
+    
     var profileSection: some View {
-        Section(header: Text("profile")) {
+        Section(header: Text(lang.profile).foregroundColor(theme.onSurface)) {
             HStack {
                 profileIcon
                 NavigationLink(destination: AccountDetailView()) {
                     VStack(alignment: .leading) {
                         Text(authModel.currentUser?.firstName ?? "")
+                            .foregroundColor(theme.onSurface)
                         Text(authModel.currentUser?.email ?? "")
-                            .foregroundColor(.green)
+                            .font(.caption)
+                            .foregroundColor(theme.secondary)
                     }
                 }
                 .padding(.leading, 5)
@@ -49,51 +58,75 @@ private extension SettingsScreen {
             }
         }
     }
-    
+
     var profileIcon: some View {
         Circle()
             .frame(width: 40, height: 40)
-            .foregroundColor(.green)
+            .foregroundColor(theme.primary)
             .overlay {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: AppAssets.personCrop)
                     .font(.title)
-                    .foregroundColor(.white)
+                    .foregroundColor(theme.onPrimary)
             }
     }
-    
-    
+
     var configurationSection: some View {
-        Section(header: Text("Configure")) {
-            NavigationLink(destination: CategoryView()) {
-                Text("Categories")
+        Section(header: Text(lang.configure).foregroundColor(theme.onSurface)) {
+            Button {
+                router.navigate(to: .categoryList)
+            } label: {
+                HStack {
+                    Text("Categories")
+                        .foregroundColor(theme.onBackground)
+                    Spacer()
+
+                    Image(systemName: AppAssets.chevronRight)
+                        .foregroundColor(theme.onSurface.opacity(0.5))
+                }
+
             }
             
-            NavigationLink(destination: CategoryView()) {
+            NavigationLink(destination: CategoryListScreen()) {
                 Text("Tags")
+                    .foregroundColor(theme.onSurface)
             }
         }
     }
-    
-    
+
     var otherOptionsSection: some View {
-        Section(header: Text("Others")) {
-            Text("Rate Us")
-            Text("Logout")
+        Section(header: Text(lang.others).foregroundColor(theme.onSurface)) {
+            Text(lang.rateUs)
+                .foregroundColor(theme.onSurface)
+            
+            Text(lang.logout)
+                .foregroundColor(theme.error)
                 .onTapGesture {
                     showLogoutAlert = true
                 }
                 .alert(isPresented: $showLogoutAlert) {
-                    Alert(title: Text("Are you sure you want to logout?"),
-                          primaryButton: .default(Text("YES"),                                 action: {
-                        do {
-                            try authModel.logout()
-                        } catch {
-                            print("Logout error: \(error)")
-                        }
-                    }), secondaryButton: .default(Text("CANCEL")))
+                    Alert(
+                        title: Text(alertLang.title),
+                        primaryButton: .default(Text(commonLang.yes.uppercased())) {
+                            do {
+                                try authModel.logout()
+                            } catch {
+                                print("Logout error: \(error)")
+                            }
+                        },
+                        secondaryButton: .cancel(Text(commonLang.cancel.uppercased()))
+                    )
                 }
-            Text("About Us")
-            
+
+            Text(lang.aboutUs)
+                .foregroundColor(theme.onSurface)
         }
     }
+}
+
+
+#Preview {
+     SettingsScreen()
+        .environmentObject(ThemeManager.shared)
+        .environmentObject(Router<SettingsRoute>())
+        .environment(AuthAggregateModel())
 }

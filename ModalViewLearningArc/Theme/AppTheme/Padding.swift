@@ -10,10 +10,11 @@ import SwiftUI
 
 
 enum PaddingSizeEnum {
-    case p4, p8, p10, p12, p16, p20, p24, p32
+    case p2, p4, p8, p10, p12, p16, p20, p24, p32
 
     var value: CGFloat {
         switch self {
+        case .p2: return 2
         case .p4: return 4
         case .p8: return 8
         case .p10: return 10

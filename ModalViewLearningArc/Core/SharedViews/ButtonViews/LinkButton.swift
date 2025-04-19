@@ -10,6 +10,7 @@ import SwiftUI
 
 struct LinkButton: View {
     let title: String
+    let isDisabled: Bool
     let action: () -> Void
     var font: Font = .footnote
 
@@ -19,13 +20,14 @@ struct LinkButton: View {
         Button(action: action) {
             Text(title)
                 .font(font)
-                .foregroundColor(theme.primary)
+                .foregroundColor(theme.primary.opacity(isDisabled ? 0.35 : 1))
         }
+        .disabled(isDisabled)
     }
 }
 
 #Preview{
-    LinkButton(title: "Link Button") {
+    LinkButton(title: "Link Button", isDisabled: true) {
         print("Button pressed")
     }
     .environmentObject(ThemeManager.shared)

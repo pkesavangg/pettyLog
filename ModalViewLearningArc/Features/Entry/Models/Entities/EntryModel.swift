@@ -12,4 +12,5 @@ struct EntryModel: Identifiable, Codable {
     var amount: Double
     var description: String
     var imageURLs: [String]
+    var category: CategoryModel = CategoryModel(id: "sdfsdf", name: "Uncategorized", icon: "home", color: "#ffffff", dateCreated: Date().description, isDefault: false)
 }

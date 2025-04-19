@@ -57,7 +57,7 @@ struct LoginScreen: View {
                         Task { await handleLogin() }
                     }
 
-                    LinkButton(title: CommonStrings.signup) {
+                    LinkButton(title: CommonStrings.signup, isDisabled: false) {
                         router.navigate(to: .signup)
                     }
                     
@@ -67,7 +67,7 @@ struct LoginScreen: View {
                             .foregroundColor(theme.onBackground.opacity(0.6))
                             .multilineTextAlignment(.center)
                         
-                        LinkButton(title: CommonStrings.forgotPassword) {
+                        LinkButton(title: CommonStrings.forgotPassword, isDisabled: false) {
                             showResetPasswordAlert = true
                         }
                     }

@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct HomeScreen: View {
     @Environment(HomeAggregateModel.self) var homeModel
 
@@ -36,4 +34,10 @@ struct HomeScreen: View {
             await homeModel.loadEntries()
         }
     }
+}
+
+
+#Preview {
+    HomeScreen()
+        .environment(HomeAggregateModel(authModel: AuthAggregateModel()))
 }

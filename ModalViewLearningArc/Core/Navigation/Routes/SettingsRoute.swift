@@ -7,28 +7,20 @@
 import SwiftUI
 
 enum SettingsRoute: Routable {
-    case account, category
+    case account, categoryList, addEditCategory(CategoryModel?)
     
     var body: some View {
         switch self {
         case .account:
             AccountDetailView()
-        case .category:
-            CategoryView()
+        case .categoryList:
+            CategoryListScreen()
+        case .addEditCategory(let category):
+            AddEditCategoryView(existingCategory: category)
         }
     }
 }
 
-struct CategoryView: View {
-    var body: some View {
-        VStack {
-            Text("Account Details")
-                .font(.largeTitle)
-                .padding()
-            // Add more account-related UI elements here
-        }
-    }
-}
 
 struct AccountDetailView: View {
     var body: some View {

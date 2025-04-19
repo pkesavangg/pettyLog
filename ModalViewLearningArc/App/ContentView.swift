@@ -31,6 +31,7 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environment(AuthAggregateModel())
+        .environmentObject(ThemeManager.shared)
 }
 
 import SwiftUI

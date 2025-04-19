@@ -14,12 +14,6 @@ struct DashboardScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ThemeSwitcher()
-                .padding(.top, 8)
-                .padding(.bottom, 4)
-                .frame(maxWidth: .infinity)
-                .background(theme.surface)
-                .foregroundColor(theme.onSurface)
 
             TabView {
                 HomeScreen()
