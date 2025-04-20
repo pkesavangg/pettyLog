@@ -28,6 +28,42 @@ struct FormLabelStyleModifier: ViewModifier {
     }
 }
 
+struct ListScreenStyleModifier: ViewModifier {
+    let title: String
+    var tabBarHidden: Bool = true
+
+    @Environment(\.appTheme) private var theme
+
+    func body(content: Content) -> some View {
+        content
+            .accentColor(theme.primary)
+            .modifier(HideTabBarModifier(hidden: tabBarHidden))
+            .scrollContentBackground(.hidden)
+            .background(
+                LinearGradient(
+                    colors: [theme.primary.opacity(0.2), .white],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// Helper modifier to conditionally hide tab bar
+struct HideTabBarModifier: ViewModifier {
+    var hidden: Bool
+
+    func body(content: Content) -> some View {
+        if hidden {
+            content.toolbar(.hidden, for: .tabBar)
+        } else {
+            content
+        }
+    }
+}
+
 
 extension View {
     func labelStyle() -> some View {
@@ -36,5 +72,9 @@ extension View {
     
     func formLabelStyle() -> some View {
         self.modifier(FormLabelStyleModifier())
+    }
+    
+    func listScreenStyle(title: String, tabBarHidden: Bool = true) -> some View {
+        self.modifier(ListScreenStyleModifier(title: title, tabBarHidden: tabBarHidden))
     }
 }

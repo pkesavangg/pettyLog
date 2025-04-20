@@ -25,34 +25,49 @@ struct EntryListRowView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Top Row: Amount & Description
             HStack(alignment: .top) {
-                Text("₹\(String(format: "%.2f", entry.amount))")
-                    .font(.headline)
-                    .foregroundColor(theme.onSurface)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .top) {
+                        Text("₹\(String(format: "%.2f", entry.amount))")
+                            .font(.headline)
+                            .foregroundColor(theme.onSurface)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
-                if let category = selectedCategory {
-                    CategoryIconView(iconName: category.icon)
-                }
-            }
-
-            
-            Text(entry.description)
-                .font(.subheadline)
-                .foregroundColor(theme.onSurface.opacity(0.8))
-                .lineLimit(1)
-                .truncationMode(.tail)
-
-            // Tag Chips
-            if !selectedTags.isEmpty {
-                HStack(spacing: 6) {
-                    ForEach(selectedTags, id: \.id) { tag in
-                        TagChipView(tag: tag)
                     }
+
+                    Text(entry.description)
+                        .font(.subheadline)
+                        .foregroundColor(theme.onSurface.opacity(0.8))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    // Tag Chips
+                    if !selectedTags.isEmpty {
+                        HStack(spacing: 6) {
+                            ForEach(selectedTags, id: \.id) { tag in
+                                TagChipView(tag: tag)
+                            }
+                        }
+                    }
+                }
+                
+                
+                // Show Category Icon
+                VStack(spacing: 15) {
+                    if let category = selectedCategory {
+                        CategoryIconView(iconName: category.icon)
+                    }
+                    
+                    Image(systemName: entry.imageURLs.isEmpty ? AppAssets.photoWithExclamationMark : AppAssets.photo)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(theme.onSurface)
+                        .padding(.leading, 4)
                 }
             }
         }
-        .padding(.all, .p12)
+        .padding(.all, .p6)
     }
+
 }

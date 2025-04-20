@@ -88,12 +88,15 @@ struct EntryScreenStrings {
     static let dateFieldLabel = "Date"
     static let categoryFieldLabel = "Category"
     static let tagFieldLabel = "Tags"
+    static let addEntry = "Add Entry"
     static func entryTitle(_ isEdit: Bool) -> String {
         return isEdit ? "Edit Entry" : "Create Entry"
     }
     static func sheetTitle(_ isCategory: Bool) -> String {
         return isCategory ? "Select Category" : "Select Tags"
     }
+    static let entryDetails = "Entry Details"
+    static let noEntriesAvailable = "No entries available"
 }
 
 // MARK: - SettingScreenStrings.swift
@@ -148,4 +151,8 @@ struct AppAssets {
     static let chevronRight = "chevron.right"
     static let trash = "trash"
     static let checkmark = "checkmark"
+    static let lineDecrease = "line.3.horizontal.decrease"
+    static let photo = "photo"
+    static let pencil = "pencil"
+    static let photoWithExclamationMark = "photo.badge.exclamationmark"
 }

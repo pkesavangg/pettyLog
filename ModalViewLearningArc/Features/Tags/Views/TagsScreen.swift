@@ -39,28 +39,15 @@ struct TagsScreen: View {
                         }
                 }
             }
-            Button {
+            Button(action: {
                 router.navigate(to: .addEditTag(nil))
-            } label: {
-                HStack {
-                    Image(systemName: AppAssets.plus)
-                    Text(lang.createNewTag)
-                        .fontWeight(.semibold)
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .foregroundColor(theme.primary)
-                .background(theme.primary.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }) {
+                Label(lang.createNewTag, systemImage: AppAssets.plus)
+                    .fontWeight(.semibold)
             }
-            .padding(.horizontal)
+            .buttonStyle(CreateNewButtonStyle())
         }
-        .accentColor(theme.primary)
-        .toolbar(.hidden, for: .tabBar)
-        .scrollContentBackground(.hidden)
-        .background(LinearGradient(colors: [theme.primary.opacity(0.2), .white], startPoint: .top, endPoint: .bottom))
-        .navigationTitle(lang.title)
-        .navigationBarTitleDisplayMode(.inline)
+        .listScreenStyle(title: lang.title)
     }
 }
 

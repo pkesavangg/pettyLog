@@ -10,32 +10,52 @@ import SwiftUI
 struct EntryScreen: View {
     @Environment(EntryAggregateModel.self) var entryModel
     @StateObject var router: Router<EntryRoute> = .init()
+    @Environment(\.appTheme) private var theme
     let lang = EntryScreenStrings.self
     var body: some View {
         RoutingView(stack: $router.stack) {
-            RedactableList(isLoading: entryModel.isLoading,
-                           placeholderCount: 10) {
-                ForEach(entryModel.entries) { entry in
-                    Button {
-                        router.navigate(to: .addEditEntry(entry))
-                    } label: {
-                        EntryListRowView(
-                                        entry: entry,
-                                        categories: entryModel.getCategories(),
-                                        tags: entryModel.getTags()
-                                    )
+            VStack {
+                if entryModel.entries.isEmpty && !entryModel.isLoading {
+                    List {
+                        Text(lang.noEntriesAvailable)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.onSurface)
+                    }
+                } else {
+                    RedactableList(isLoading: entryModel.isLoading,
+                                   placeholderCount: 5) {
+                        ForEach(entryModel.entries) { entry in
+                            Button {
+                                router.navigate(to: .entryDetail(entry))
+                            } label: {
+                                EntryListRowView(
+                                    entry: entry,
+                                    categories: entryModel.getCategories(),
+                                    tags: entryModel.getTags()
+                                )
+                            }
+                        }
                     }
                 }
             }
-            .navigationTitle(lang.title)
-            .navigationBarTitleDisplayMode(.inline)
+            .listScreenStyle(title: lang.title, tabBarHidden: false)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        router.navigate(to: .addEditEntry(nil))
-                    } label: {
-                        Image(systemName: AppAssets.plus)
-                            .foregroundColor(.primary)
+                    HStack {
+                        Button {
+                            // TODO: Implement sort and filter action
+                        } label: {
+                            Image(systemName: AppAssets.lineDecrease)
+                                .foregroundColor(theme.primary)
+                        }
+                        
+                        Button {
+                            router.navigate(to: .addEditEntry(nil))
+                        } label: {
+                            Image(systemName: AppAssets.plus)
+                                .foregroundColor(theme.primary)
+                        }
                     }
                 }
             }
