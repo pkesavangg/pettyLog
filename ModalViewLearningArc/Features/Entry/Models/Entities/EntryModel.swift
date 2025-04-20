@@ -6,11 +6,12 @@
 //
 import Foundation
 
-struct EntryModel: Identifiable, Codable {
+struct EntryModel: Identifiable, Codable, Hashable {
     var id: String
-    var date: Date
+    var date: String
     var amount: Double
     var description: String
     var imageURLs: [String]
-    var category: CategoryModel = CategoryModel(id: "sdfsdf", name: "Uncategorized", icon: "home", color: "#ffffff", dateCreated: Date().description, isDefault: false)
+    var category: String // Category id
+    var tags: [String]? // Tag ids
 }

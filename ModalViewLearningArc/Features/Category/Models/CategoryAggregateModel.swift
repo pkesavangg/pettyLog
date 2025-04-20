@@ -22,6 +22,7 @@ final class CategoryAggregateModel {
         Task {
             await loadCategories()
         }
+        print("CategoryAggregateModel initialized with authModel:")
     }
 
     func loadCategories() async {

@@ -22,6 +22,7 @@ final class TagAggregateModel {
         Task {
             await loadTags()
         }
+        print("TagAggregateModel initialized with authModel:")
     }
 
     func loadTags() async {

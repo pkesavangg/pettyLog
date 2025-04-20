@@ -28,6 +28,7 @@ struct CommonStrings {
     static let theme = "Theme"
     static let done = "Done"
     static let selectColor = "Select Color"
+    static let date = "Date"
 }
 
 // MARK: Alert Messages
@@ -51,8 +52,14 @@ struct ErrorMessages {
         static let emptyField = "This field cannot be empty."
         static let mustBeAtLeast6Characters = "Must be less than 15 characters"
         static func minLength(_ length: Int = 6) -> String {
+            return "Must be at least \(length) characters"
+        }
+        static func maxLength(_ length: Int = 6) -> String {
             return "Must be less than \(length) characters"
         }
+        static let mustBeNumber = "Amount must be a number"
+        static let mustBePositive = "Amount must be a positive number"
+        static let cantExceedMaxValue = "Amount cannot exceed 30,000"
     }
 
     struct Auth {
@@ -69,6 +76,24 @@ struct ErrorMessages {
 struct LandingScreenStrings {
     static let welcomeBack = "Welcome Back"
     static let instruction = "Please enter your credentials to login"
+}
+
+// MARK: - EntryScreenStrings.swift
+struct EntryScreenStrings {
+    static let title = "Entries"
+    static let amountFieldLabel = "Amount"
+    static let amountFieldPlaceholder = "Enter amount"
+    static let descriptionFieldLabel = "Description"
+    static let descriptionFieldPlaceholder = "Enter description"
+    static let dateFieldLabel = "Date"
+    static let categoryFieldLabel = "Category"
+    static let tagFieldLabel = "Tags"
+    static func entryTitle(_ isEdit: Bool) -> String {
+        return isEdit ? "Edit Entry" : "Create Entry"
+    }
+    static func sheetTitle(_ isCategory: Bool) -> String {
+        return isCategory ? "Select Category" : "Select Tags"
+    }
 }
 
 // MARK: - SettingScreenStrings.swift

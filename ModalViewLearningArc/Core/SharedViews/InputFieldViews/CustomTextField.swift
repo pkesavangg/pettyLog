@@ -10,62 +10,69 @@ import SwiftUI
 /// Supports password visibility toggle (`.passwordWithToggle`), keyboard configuration, and capitalization settings.
 struct CustomTextField: View {
     @Environment(\.appTheme) private var theme
-    @Binding var text: String
+    @Binding var value: String
     var placeholder: String = CommonStrings.defaultPlaceholder
     var inputType: InputType = .text
+    var label: String = ""
     @State private var isSecure: Bool = true
     var isDirty: Binding<Bool>? = nil
     
     var body: some View {
-        HStack {
-            // MARK: - Field type rendering
-            Group {
-                switch inputType {
-                case .password:
-                    SecureField(placeholder, text: $text)
-                        .textStyle
-
-                case .passwordWithToggle:
-                    if isSecure {
-                        SecureField(placeholder, text: $text)
+        VStack(alignment: .leading) {
+            if !label.isEmpty {
+                Text(label)
+                    .labelStyle()
+            }
+            HStack {
+                // MARK: - Field type rendering
+                Group {
+                    switch inputType {
+                    case .password:
+                        SecureField(placeholder, text: $value)
                             .textStyle
-                    } else {
-                        TextField(placeholder, text: $text)
+
+                    case .passwordWithToggle:
+                        if isSecure {
+                            SecureField(placeholder, text: $value)
+                                .textStyle
+                        } else {
+                            TextField(placeholder, text: $value)
+                                .keyboardType(keyboardType)
+                                .textInputAutocapitalization(autocapitalization)
+                                .textStyle
+                        }
+
+                    default:
+                        TextField(placeholder, text: $value)
                             .keyboardType(keyboardType)
                             .textInputAutocapitalization(autocapitalization)
                             .textStyle
                     }
+                }
+                .frame(height: 25)
 
-                default:
-                    TextField(placeholder, text: $text)
-                        .keyboardType(keyboardType)
-                        .textInputAutocapitalization(autocapitalization)
-                        .textStyle
+                // MARK: - Toggle button for passwordWithToggle
+                if inputType == .passwordWithToggle {
+                    Button(action: {
+                        isSecure.toggle()
+                    }) {
+                        Image(systemName: isSecure ? AppAssets.eyeIcon : AppAssets.eyeSlashIcon)
+                            .foregroundColor(theme.onSurface.opacity(0.6))
+                    }
                 }
             }
-            .frame(height: 25)
-
-            // MARK: - Toggle button for passwordWithToggle
-            if inputType == .passwordWithToggle {
-                Button(action: {
-                    isSecure.toggle()
-                }) {
-                    Image(systemName: isSecure ? AppAssets.eyeIcon : AppAssets.eyeSlashIcon)
-                        .foregroundColor(theme.onSurface.opacity(0.6))
+            .onChange(of: value) {
+                if let isDirty = isDirty, !isDirty.wrappedValue {
+                    isDirty.wrappedValue = true
                 }
             }
-        }
-        .onChange(of: text) { _ in
-            if let isDirty = isDirty, !isDirty.wrappedValue {
-                isDirty.wrappedValue = true
+            .padding(.all, .p12)
+            .background(theme.surface)
+            .cornerRadius(.small)
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .stroke(theme.onSurface.opacity(0.2), lineWidth: 1)
             }
-        }
-        .padding(.all, .p12)
-        .background(theme.surface)
-        .cornerRadius(.small)
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .stroke(theme.onSurface.opacity(0.2), lineWidth: 1)
         }
     }
 
@@ -105,13 +112,13 @@ private extension View {
 
 #Preview("CustomTextField Variants") {
     VStack(spacing: 16) {
-        CustomTextField(text: .constant("user@example.com"), placeholder: "Email", inputType: .email)
+        CustomTextField(value: .constant("user@example.com"), placeholder: "Email", inputType: .email, label: "Email Address")
 
-        CustomTextField(text: .constant(""), placeholder: "Phone", inputType: .phoneNumber)
+        CustomTextField(value: .constant(""), placeholder: "Phone", inputType: .phoneNumber)
 
-        CustomTextField(text: .constant("123456"), placeholder: "Password", inputType: .password)
+        CustomTextField(value: .constant("123456"), placeholder: "Password", inputType: .password)
 
-        CustomTextField(text: .constant("Secret123"), placeholder: "Password with Toggle", inputType: .passwordWithToggle)
+        CustomTextField(value: .constant("Secret123"), placeholder: "Password with Toggle", inputType: .passwordWithToggle)
     }
     .padding()
     .background(Color(.systemGroupedBackground))

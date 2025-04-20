@@ -33,8 +33,7 @@ struct SettingsScreen: View {
         }
         .environmentObject(router)
         .environment(settingAggregateModel)
-        .environment(CategoryAggregateModel(authModel: authModel))
-        .environment(TagAggregateModel(authModel: authModel))
+
         .accentColor(theme.primary)
     }
 }

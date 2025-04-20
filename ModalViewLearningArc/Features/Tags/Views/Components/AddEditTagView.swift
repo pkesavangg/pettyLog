@@ -54,7 +54,7 @@ struct AddEditTagView: View {
                 
                 VStack {
                     CustomTextField(
-                        text: $tagName,
+                        value: $tagName,
                         placeholder: lang.tagFieldPlaceholder,
                         inputType: .text,
                         isDirty: $isFormDirty

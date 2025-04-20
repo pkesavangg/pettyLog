@@ -34,13 +34,13 @@ struct LoginScreen: View {
                     
                     VStack(spacing: 20) {
                         CustomTextField(
-                            text: $loginForm.email,
+                            value: $loginForm.email,
                             placeholder: CommonStrings.email,
                             inputType: .email
                         )
                         
                         CustomTextField(
-                            text: $loginForm.password,
+                            value: $loginForm.password,
                             placeholder: CommonStrings.password,
                             inputType: .passwordWithToggle
                         )

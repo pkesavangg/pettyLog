@@ -20,6 +20,7 @@ final class HomeAggregateModel {
 
     init(authModel: AuthAggregateModel) {
         self.authModel = authModel
+        print("HomeAggregateModel initialized with authModel:")
     }
 
     func loadEntries() async {
@@ -40,8 +41,8 @@ final class HomeAggregateModel {
     private func dummyEntriesFor(email: String) -> [EntryModel] {
         // This will later be replaced with a real API call
         return [
-            EntryModel(id: "UUID()", date: .now, amount: 150.0, description: "Team Snacks", imageURLs: [""]),
-            EntryModel(id: "UUIDs()", date: .now, amount: 300.0, description: "Postage", imageURLs: [""])
+//            EntryModel(id: "UUID()", date: .now, amount: 150.0, description: "Team Snacks", imageURLs: [""], category: "dsfsdf"),
+//            EntryModel(id: "UUIDs()", date: .now, amount: 300.0, description: "Postage", imageURLs: [""], category: "dsfsdf")
         ]
     }
 }
