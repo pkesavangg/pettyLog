@@ -161,4 +161,6 @@ struct AppAssets {
     static let pencil = "pencil"
     static let photoWithExclamationMark = "photo.badge.exclamationmark"
     static let xmarkCircle = "xmark.circle.fill"
+    static let faceId = "faceid"
+    static let fingerprint = "touchid"
 }

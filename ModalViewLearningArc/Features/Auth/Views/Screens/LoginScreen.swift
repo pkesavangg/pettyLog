@@ -10,6 +10,12 @@ struct LoginScreen: View {
     @State private var isLoading = false
     @State private var showResetPasswordAlert = false
     @State private var loginButtonClicked = false
+    @State private var showCredentialsNotSavedAlert = false
+    
+    @State private var alertMessage: String?
+    @State private var showSaveCredentialsPrompt = false
+    @State private var showSettingsPrompt = false
+    @State private var canSaveCredentials = false
     
     var body: some View {
         RoutingView(stack: $router.stack) {
@@ -48,13 +54,45 @@ struct LoginScreen: View {
                     
                     ValidationMessageView(message: loginForm.validationErrorMessage, show: loginButtonClicked)
                     
-                    PrimaryButton(
-                        title: CommonStrings.login,
-                        isLoading: isLoading
-                    ) {
-                        Task { await handleLogin() }
+                    VStack(spacing: 25) {
+                        PrimaryButton(
+                            title: CommonStrings.login,
+                            isLoading: isLoading
+                        ) {
+                            Task { await handleLogin() }
+                        }
+                        
+                        
+                        if authModel.getBiometricType() != .none {
+                            Button {
+                                authModel.requestBiometricUnlock { result in
+                                    switch result {
+                                    case .success(let credentials):
+                                        Task {
+                                            await handleBioMetricLogin(email: credentials.email, password: credentials.password)
+                                        }
+                                    case .failure(let authError):
+                                        switch authError {
+                                        case .credentialsNotSaved:
+                                            showSaveCredentialsPrompt = true
+                                        case .deniedAccess:
+                                            showSettingsPrompt = true
+                                        default:
+                                            alertMessage = authError.localizedDescription
+                                        }
+                                    }
+                                }
+                            } label: {
+                                Image(systemName: authModel.getBiometricType() == .faceID ? AppAssets.faceId : AppAssets.fingerprint)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 45, height: 45)
+                                    .foregroundColor(theme.onBackground.opacity(0.6))
+                            }
+                        }
                     }
-
+                    
+                    
                     LinkButton(title: CommonStrings.signup, isDisabled: false) {
                         router.navigate(to: .signup)
                     }
@@ -88,6 +126,8 @@ struct LoginScreen: View {
                 Button(CommonStrings.submit) {
                     Task {
                         try? await authModel.sendPasswordReset(to: loginForm.email)
+                        
+                        
                     }
                 }
                 Button(CommonStrings.cancel, role: .cancel) {}
@@ -97,22 +137,70 @@ struct LoginScreen: View {
             .accentColor(theme.primary)
         }
         .environmentObject(router)
+        .alert("Biometric Access Denied", isPresented: $showSettingsPrompt) {
+            Button("Go to Settings") {
+                if let appSettings = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(appSettings)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You denied biometrics access to the app. If you want to enable it, go to Settings and allow Face ID or Touch ID access.")
+        }
+        .alert("Biometric Error", isPresented: Binding(get: {
+            alertMessage != nil
+        }, set: { newValue in
+            if !newValue { alertMessage = nil }
+        })) {
+            Button("OK", role: .cancel) { alertMessage = nil }
+        } message: {
+            Text(alertMessage ?? "")
+        }
+        .alert("Save Credentials?", isPresented: $showSaveCredentialsPrompt) {
+            Button("Save") {
+                self.canSaveCredentials = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Would you like to enable Face ID / Touch ID login next time by securely saving your credentials?")
+        }
     }
     
-    private func handleLogin() async {
-        self.loginButtonClicked = true
-        if !loginForm.isValid {
-            return
+    private func handleBioMetricLogin(email: String, password: String) async {
+        isLoading = true
+        error = nil
+        do {
+            try await authModel.login(email: email, password: password)
+        } catch {
+            alertMessage = error.localizedDescription
         }
+        isLoading = false
+    }
+    
+    
+    private func handleLogin() async {
+        loginButtonClicked = true
+        if !loginForm.isValid { return }
+        
         isLoading = true
         error = nil
         do {
             try await authModel.login(email: loginForm.email, password: loginForm.password)
+            
+            // Save if not already present
+            if canSaveCredentials {
+                KeychainManager.save(loginForm.email, for: "userEmail")
+                KeychainManager.save(loginForm.password, for: "userPassword")
+            }
+            
         } catch {
-            self.error = error.localizedDescription
+            alertMessage = error.localizedDescription
         }
         isLoading = false
     }
+    
+    
+    
 }
 
 
