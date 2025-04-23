@@ -97,6 +97,11 @@ struct EntryScreenStrings {
     }
     static let entryDetails = "Entry Details"
     static let noEntriesAvailable = "No entries available"
+    static let addPlus = "Add +"
+    static let chooseFiles = "Choose Files"
+    static let fromPhotos = "From Photos"
+    static let openCamera = "Open Camera"
+    static let selectedImages = "Selected Images:"
 }
 
 // MARK: - SettingScreenStrings.swift
@@ -155,4 +160,5 @@ struct AppAssets {
     static let photo = "photo"
     static let pencil = "pencil"
     static let photoWithExclamationMark = "photo.badge.exclamationmark"
+    static let xmarkCircle = "xmark.circle.fill"
 }
