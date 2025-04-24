@@ -29,7 +29,16 @@ struct CommonStrings {
     static let done = "Done"
     static let selectColor = "Select Color"
     static let date = "Date"
+    static let ok = "OK"
+    static let goToSettings = "Go to Settings"
 }
+
+// MARK: - KeyChainKeys
+struct KeychainKeys {
+    static let userEmail = "com.greatergoods.auth.userEmail"
+    static let userPassword = "com.greatergoods.auth.userPassword"
+}
+
 
 // MARK: Alert Messages
 struct AlertMessages {
@@ -41,7 +50,16 @@ struct AlertMessages {
         static let title = "Reset Password"
         static let message = "We’ll send a link to reset your password if your email is registered."
     }
+    
+    struct Biometric {
+        static let errorTitle = "Biometric Error"
+        static let deniedTitle = "Biometric Access Denied"
+        static let deniedMessage = "You denied biometrics access to the app. If you want to enable it, go to Settings and allow Face ID or Touch ID access."
+        static let savePromptTitle = "Save Credentials?"
+        static let savePromptMessage = "Would you like to enable Face ID / Touch ID login next time by securely saving your credentials?"
+    }
 }
+
 
 // MARK: - ErrorMessages
 struct ErrorMessages {
@@ -61,13 +79,20 @@ struct ErrorMessages {
         static let mustBePositive = "Amount must be a positive number"
         static let cantExceedMaxValue = "Amount cannot exceed 30,000"
     }
-
+    
     struct Auth {
         static let invalidEmail = "Please enter a valid email."
         static let weakPassword = "The password is too weak."
         static let incorrectPassword = "The password is incorrect."
         static let accountNotFound = "No account found for this email."
         static let duplicateAccount = "An account with this email already exists."
+        
+        // New biometric + credential messages
+        static let biometricAccessDenied = "You denied biometrics access to the app. If you want to enable it, go to Settings > ModalViewLearningArc and enable biometrics."
+        static let noFaceIdEnrolled = "No Face ID is enrolled. Please add a face in Settings to use biometric login."
+        static let noFingerprintEnrolled = "No fingerprints are enrolled. Please add a fingerprint in Settings to use biometric login."
+        static let biometricVerificationFailed = "Biometric authentication failed. Your face or fingerprint could not be verified."
+        static let credentialsNotSaved = "Your credentials haven't been saved. Would you like to save them after a successful login?"
     }
 }
 

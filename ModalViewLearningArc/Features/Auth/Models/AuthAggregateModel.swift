@@ -66,7 +66,6 @@ struct KeychainManager {
             SecItemDelete(query as CFDictionary)
         }
     }
-
 }
 
 
@@ -217,7 +216,6 @@ final class AuthAggregateModel {
             predicate: #Predicate { $0.isLoggedIn == true }
         )
         currentUser = try context.fetch(descriptor).first
-        // Simulate Firebase Signup
         try await Task.sleep(nanoseconds: 1_000_000_000)
         authState = currentUser == nil ? .loggedOut : .loggedIn
     }
@@ -255,10 +253,7 @@ final class AuthAggregateModel {
         let context = LAContext()
         var error: NSError?
         
-
-        
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            let errorCode = (error as? LAError)?.code
             if let error = error {
                 switch error.code {
                 case -6:
@@ -283,13 +278,12 @@ final class AuthAggregateModel {
             DispatchQueue.main.async {
                 if success {
                     guard
-                        let email = KeychainManager.load(for: "userEmail"),
-                        let password = KeychainManager.load(for: "userPassword")
+                        let email = KeychainManager.load(for: KeychainKeys.userEmail),
+                        let password = KeychainManager.load(for: KeychainKeys.userPassword)
                     else {
                         completion(.failure(.credentialsNotSaved))
                         return
                     }
-                    print(email, password, "Credentials")
                     completion(.success(Credentials(email: email, password: password)))
                 } else {
                     completion(.failure(.biometricError))

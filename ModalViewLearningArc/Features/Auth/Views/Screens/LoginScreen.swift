@@ -17,6 +17,9 @@ struct LoginScreen: View {
     @State private var showSettingsPrompt = false
     @State private var canSaveCredentials = false
     
+    var alertLang = AlertMessages.self
+    var commonLang = CommonStrings.self
+    
     var body: some View {
         RoutingView(stack: $router.stack) {
             VStack {
@@ -126,8 +129,6 @@ struct LoginScreen: View {
                 Button(CommonStrings.submit) {
                     Task {
                         try? await authModel.sendPasswordReset(to: loginForm.email)
-                        
-                        
                     }
                 }
                 Button(CommonStrings.cancel, role: .cancel) {}
@@ -137,32 +138,36 @@ struct LoginScreen: View {
             .accentColor(theme.primary)
         }
         .environmentObject(router)
-        .alert("Biometric Access Denied", isPresented: $showSettingsPrompt) {
-            Button("Go to Settings") {
+        .alert(alertLang.Biometric.deniedTitle, isPresented: $showSettingsPrompt) {
+            Button(commonLang.goToSettings.uppercased()) {
                 if let appSettings = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(appSettings)
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(commonLang.cancel.uppercased(), role: .cancel) {}
         } message: {
-            Text("You denied biometrics access to the app. If you want to enable it, go to Settings and allow Face ID or Touch ID access.")
+            Text(alertLang.Biometric.deniedMessage)
         }
-        .alert("Biometric Error", isPresented: Binding(get: {
+
+        .alert(alertLang.Biometric.errorTitle, isPresented: Binding(get: {
             alertMessage != nil
         }, set: { newValue in
             if !newValue { alertMessage = nil }
         })) {
-            Button("OK", role: .cancel) { alertMessage = nil }
+            Button(commonLang.ok.uppercased(), role: .cancel) { alertMessage = nil }
         } message: {
             Text(alertMessage ?? "")
         }
-        .alert("Save Credentials?", isPresented: $showSaveCredentialsPrompt) {
-            Button("Save") {
+        .alert(alertLang.Biometric.savePromptTitle, isPresented: $showSaveCredentialsPrompt) {
+            Button(commonLang.save.uppercased()) {
                 self.canSaveCredentials = true
             }
-            Button("Cancel", role: .cancel) {}
+            Button(commonLang.cancel, role: .cancel) {}
         } message: {
-            Text("Would you like to enable Face ID / Touch ID login next time by securely saving your credentials?")
+            Text(alertLang.Biometric.savePromptMessage)
+        }
+        .onAppear {
+            //KeychainManager.clearAllKeychainItems()
         }
     }
     
@@ -189,8 +194,8 @@ struct LoginScreen: View {
             
             // Save if not already present
             if canSaveCredentials {
-                KeychainManager.save(loginForm.email, for: "userEmail")
-                KeychainManager.save(loginForm.password, for: "userPassword")
+                KeychainManager.save(loginForm.email, for: KeychainKeys.userEmail)
+                KeychainManager.save(loginForm.password, for: KeychainKeys.userPassword)
             }
             
         } catch {

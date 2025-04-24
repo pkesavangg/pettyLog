@@ -24,7 +24,7 @@ enum AuthError: Error, LocalizedError {
     case noFingerprintEnrolled
     case biometricError
     case credentialsNotSaved
-
+    
     var errorDescription: String? {
         switch self {
         case .invalidEmail:
@@ -38,15 +38,15 @@ enum AuthError: Error, LocalizedError {
         case .incorrectPassword:
             return ErrorMessages.Auth.incorrectPassword
         case .deniedAccess:
-            return "You denied biometrics access to the app. If you want to enable it, go to Settings > ModalViewLearningArc and enable biometrics."
+            return ErrorMessages.Auth.biometricAccessDenied
         case .noFaceIdEnrolled:
-            return "You have not registered any faces."
+            return ErrorMessages.Auth.noFaceIdEnrolled
         case .noFingerprintEnrolled:
-            return "You have not registered any fingerprints."
+            return ErrorMessages.Auth.noFingerprintEnrolled
         case .biometricError:
-            return "Your face or fingerprint could not be verified."
+            return ErrorMessages.Auth.biometricVerificationFailed
         case .credentialsNotSaved:
-            return "Your credentials have not been saved. Do you want to save them in next successful login?"
+            return ErrorMessages.Auth.credentialsNotSaved
         case .custom(let message):
             return message
         }
