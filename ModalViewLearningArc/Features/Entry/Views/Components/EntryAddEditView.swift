@@ -7,6 +7,8 @@
 
 import SwiftUI
 import PhotosUI
+import UIKit
+import Foundation
 
 struct EntryAddEditView: View {
     var existingEntry: EntryModel? = nil
@@ -23,195 +25,200 @@ struct EntryAddEditView: View {
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
     @State private var selectedUIImages: [UIImage] = []
-    
+    @State private var isUploading = false
     
     let lang = EntryScreenStrings.self
     let commonLang = CommonStrings.self
+    let loaderLang = LoaderMessages.self
     
     var isEditing: Bool {
         existingEntry != nil
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Text(lang.dateFieldLabel)
-                    .formLabelStyle()
-                DatePicker(
-                    "",
-                    selection: $form.date,
-                    in: ...Date.now,
-                    displayedComponents: .date
-                )
-            }
-            VStack {
-                CustomTextField(value: $form.amount,
-                                placeholder: lang.amountFieldPlaceholder,
-                                inputType: .number,
-                                label: lang.amountFieldLabel,
-                                isDirty: $form.isAmountFieldDirty)
-                ValidationMessageView(message: form.amountError ?? "", show: form.isAmountFieldDirty)
-            }
-            
-            VStack {
-                CustomTextField(value: $form.description,
-                                placeholder: lang.descriptionFieldPlaceholder,
-                                inputType: .text,
-                                label: lang.descriptionFieldLabel,
-                                isDirty: $form.isDescFieldDirty)
-                ValidationMessageView(message: form.descriptionError ?? "", show: form.isDescFieldDirty)
-            }
-            
-            Button {
-                showCategorySheet = true
-            } label: {
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(spacing: 20) {
                 HStack {
-                    Text(lang.categoryFieldLabel)
+                    Text(lang.dateFieldLabel)
                         .formLabelStyle()
-                    Spacer()
-                    if let category = selectedCategory {
-                        Text(category.name)
-                            .font(.caption)
-                            .padding(.horizontal, .p12)
-                            .padding(.vertical, .p6)
-                            .background(category.displayColor)
-                            .foregroundColor(theme.onPrimary)
-                            .clipShape(Capsule())
-                    }
+                    DatePicker(
+                        "",
+                        selection: $form.date,
+                        in: ...Date.now,
+                        displayedComponents: .date
+                    )
                 }
-            }
-            
-            Button {
-                showTagsSheet = true
-            } label: {
-                HStack {
-                    Text(lang.tagFieldLabel)
-                        .formLabelStyle()
-                    Spacer()
-                    Group {
-                        if selectedTagNames.count == 0 {
-                            Text(lang.addPlus)
-                        } else {
-                            Text(selectedTagNames.joined(separator: ", "))
-                        }
-                    }
-                    .foregroundColor(theme.onSurface)
+                VStack {
+                    CustomTextField(value: $form.amount,
+                                    placeholder: lang.amountFieldPlaceholder,
+                                    inputType: .number,
+                                    label: lang.amountFieldLabel,
+                                    isDirty: $form.isAmountFieldDirty)
+                    ValidationMessageView(message: form.amountError ?? "", show: form.isAmountFieldDirty)
                 }
-            }
-            
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(lang.chooseFiles)
-                        .formLabelStyle()
+                
+                VStack {
+                    CustomTextField(value: $form.description,
+                                    placeholder: lang.descriptionFieldPlaceholder,
+                                    inputType: .text,
+                                    label: lang.descriptionFieldLabel,
+                                    isDirty: $form.isDescFieldDirty)
+                    ValidationMessageView(message: form.descriptionError ?? "", show: form.isDescFieldDirty)
+                }
+                
+                Button {
+                    showCategorySheet = true
+                } label: {
                     HStack {
-                        PhotosPicker(selection: $selectedItems, matching: .images) {
-                            HStack {
-                                Text(lang.fromPhotos)
-                                    .padding()
-                                    .background(.thinMaterial)
-                                    .clipShape(Capsule())
-                                    .formLabelStyle()
-                            }
-                        }
-                        Text(lang.openCamera)
-                            .padding()
-                            .background(.thinMaterial)
-                            .clipShape(Capsule())
+                        Text(lang.categoryFieldLabel)
                             .formLabelStyle()
-                            .onTapGesture {
-                                showCamera = true
-                            }
-                    }
-                }
-                Spacer()
-            }
-            .onChange(of: selectedItems) {
-                Task {
-                    for item in selectedItems {
-                        if let data = try? await item.loadTransferable(type: Data.self),
-                           let uiImage = UIImage(data: data) {
-                            selectedUIImages.append(uiImage)
-                            selectedImages.append(Image(uiImage: uiImage)) // for preview
+                        Spacer()
+                        if let category = selectedCategory {
+                            Text(category.name)
+                                .font(.caption)
+                                .padding(.horizontal, .p12)
+                                .padding(.vertical, .p6)
+                                .background(category.displayColor)
+                                .foregroundColor(theme.onPrimary)
+                                .clipShape(Capsule())
                         }
                     }
                 }
-            }
-            .onChange(of: capturedImage) {
-                if let newImage = capturedImage {
-                    selectedUIImages.append(newImage)
-                    selectedImages.append(Image(uiImage: newImage))
+                
+                Button {
+                    showTagsSheet = true
+                } label: {
+                    HStack {
+                        Text(lang.tagFieldLabel)
+                            .formLabelStyle()
+                        Spacer()
+                        Group {
+                            if selectedTagNames.count == 0 {
+                                Text(lang.addPlus)
+                            } else {
+                                Text(selectedTagNames.joined(separator: ", "))
+                            }
+                        }
+                        .foregroundColor(theme.onSurface)
+                    }
                 }
-            }
-            .sheet(isPresented: $showCamera) {
-                CameraPicker(image: $capturedImage)
-            }
-            if selectedUIImages.count > 0 {
+                
                 HStack {
-                    Text(lang.selectedImages)
+                    VStack(alignment: .leading) {
+                        Text(lang.chooseFiles)
+                            .formLabelStyle()
+                        HStack {
+                            PhotosPicker(selection: $selectedItems, matching: .images) {
+                                HStack {
+                                    Text(lang.fromPhotos)
+                                        .padding()
+                                        .background(.thinMaterial)
+                                        .clipShape(Capsule())
+                                        .formLabelStyle()
+                                }
+                            }
+                            Text(lang.openCamera)
+                                .padding()
+                                .background(.thinMaterial)
+                                .clipShape(Capsule())
+                                .formLabelStyle()
+                                .onTapGesture {
+                                    showCamera = true
+                                }
+                        }
+                    }
+                    Spacer()
+                }
+                .onChange(of: selectedItems) {
+                    Task {
+                        for item in selectedItems {
+                            if let data = try? await item.loadTransferable(type: Data.self),
+                               let uiImage = UIImage(data: data) {
+                                selectedUIImages.append(uiImage)
+                                selectedImages.append(Image(uiImage: uiImage)) // for preview
+                            }
+                        }
+                    }
+                }
+                .onChange(of: capturedImage) {
+                    if let newImage = capturedImage {
+                        selectedUIImages.append(newImage)
+                        selectedImages.append(Image(uiImage: newImage))
+                    }
+                }
+                .sheet(isPresented: $showCamera) {
+                    CameraPicker(image: $capturedImage)
+                }
+                HStack {
+                    Text(selectedUIImages.count > 0 ? lang.selectedImages : lang.bills)
                         .formLabelStyle()
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack {
-                    ForEach(0..<selectedImages.count, id: \.self) { i in
-                        ZStack(alignment: .topTrailing) {
-                            selectedImages[i]
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 150, height: 150)
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                )
-
-                            Button(action: {
-                                selectedImages.remove(at: i)
-                                selectedUIImages.remove(at: i)
-                            }) {
-                                Image(systemName:AppAssets.xmarkCircle)
-                                    .foregroundColor(.white)
-                                    .background(Circle().fill(Color.black.opacity(0.6)))
-                                    .font(.system(size: 15))
+                
+                if selectedUIImages.count > 0 {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack {
+                            ForEach(0..<selectedImages.count, id: \.self) { i in
+                                ZStack(alignment: .topTrailing) {
+                                    selectedImages[i]
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 150, height: 150)
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                        )
+                                    
+                                    Button(action: {
+                                        selectedImages.remove(at: i)
+                                        selectedUIImages.remove(at: i)
+                                    }) {
+                                        Image(systemName: AppAssets.xmarkCircle)
+                                            .foregroundColor(theme.primary
+                                                .opacity(0.8))
+                                            .background(Circle().fill(theme.primary.opacity(0.2)))
+                                            .font(.system(size: 15))
+                                    }
+                                    .offset(x: 4, y: -4)
+                                    .padding(.top, 8)
+                                    .padding(.trailing, 4)
+                                }
+                                .padding(.trailing, 8)
                             }
-                            .offset(x: 8, y: -8)
-                            .padding(.top, 4)
-                            .padding(.trailing, 4)
                         }
-                        .padding(.trailing, 8)
                     }
+                } else {
+                    // Placeholder when no images are attached
+                    BillsPlaceholderView()
                 }
+                
+                // Loading indicator for image uploads
+                if isUploading {
+                    VStack {
+                        ProgressView(loaderLang.uploading)
+                            .padding()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                    .padding()
+                }
+                
+                Spacer()
             }
-
-            Spacer()
+            .padding()
         }
-        .padding()
         .navigationTitle(lang.entryTitle(isEditing))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isEditing ? commonLang.update : commonLang.save) {
                     Task {
-                        var imageUrls = existingEntry?.imageURLs ?? []
-                        let entry = EntryModel(
-                            id: existingEntry?.id ?? UUID().uuidString,
-                            date: DateFormatter.fullTimestampFormatter.string(from: form.date),
-                            amount: Double(form.amount) ?? 0,
-                            description: form.description,
-                            imageURLs: imageUrls,
-                            category: form.selectedCategoryId,
-                            tags: form.selectedTagIds
-                        )
-                        form.reset()
-                        selectedImages.removeAll()
-                        selectedUIImages.removeAll()
-                        await entryModel.saveEntry(entry)
-                        router.navigateBack()
+                        await saveEntryWithImages()
                     }
                 }
-                .disabled(!form.isValid)
+                .disabled(!form.isValid || isUploading)
             }
         }
         .toolbar(.hidden, for: .tabBar)
@@ -261,6 +268,63 @@ struct EntryAddEditView: View {
         entryModel.getTags()
             .filter { form.selectedTagIds.contains($0.id) }
             .map(\.name)
+    }
+    
+    /// Uploads images to Cloudinary and saves the entry with the image URLs
+    private func saveEntryWithImages() async {
+        guard form.isValid else { return }
+        
+        // If no images to upload, just save the entry
+        if selectedUIImages.isEmpty {
+            await saveEntry(imageUrls: existingEntry?.imageURLs ?? [])
+            return
+        }
+        
+        // Show uploading state
+        isUploading = true
+        
+        // Upload images to Cloudinary
+        do {
+            let imageUrls = try await withCheckedThrowingContinuation { continuation in
+                CloudinaryService.shared.uploadImages(selectedUIImages) { result in
+                    continuation.resume(with: result)
+                }
+            }
+            
+            // Combine with existing image URLs if editing
+            var allImageUrls = existingEntry?.imageURLs ?? []
+            allImageUrls.append(contentsOf: imageUrls)
+            
+            // Save entry with image URLs
+            await saveEntry(imageUrls: allImageUrls)
+        } catch {
+            // Handle upload error
+            isUploading = false
+            // You could show an error toast or alert here
+        }
+    }
+    
+    /// Saves the entry with the provided image URLs
+    private func saveEntry(imageUrls: [String]) async {
+        let entry = EntryModel(
+            id: existingEntry?.id ?? UUID().uuidString,
+            date: DateFormatter.fullTimestampFormatter.string(from: form.date),
+            amount: Double(form.amount) ?? 0,
+            description: form.description,
+            imageURLs: imageUrls,
+            category: form.selectedCategoryId,
+            tags: form.selectedTagIds
+        )
+        
+        // Reset form and state
+        form.reset()
+        selectedImages.removeAll()
+        selectedUIImages.removeAll()
+        isUploading = false
+        
+        // Save entry and navigate back
+        await entryModel.saveEntry(entry)
+        router.navigateBack()
     }
 }
 

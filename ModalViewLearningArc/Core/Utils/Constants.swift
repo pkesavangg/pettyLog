@@ -60,6 +60,15 @@ struct AlertMessages {
     }
 }
 
+// MARK: - Loader Messages
+struct LoaderMessages {
+    static let loading = "Loading..."
+    static let saving = "Saving..."
+    static let deleting = "Deleting..."
+    static let loggingIn = "Logging in..."
+    static let uploading = "Uploading..."
+}
+
 
 // MARK: - ErrorMessages
 struct ErrorMessages {
@@ -127,6 +136,8 @@ struct EntryScreenStrings {
     static let fromPhotos = "From Photos"
     static let openCamera = "Open Camera"
     static let selectedImages = "Selected Images:"
+    static let billNotAttached = "Bill not attached"
+    static let bills = "Bills"
 }
 
 // MARK: - SettingScreenStrings.swift
@@ -188,4 +199,5 @@ struct AppAssets {
     static let xmarkCircle = "xmark.circle.fill"
     static let faceId = "faceid"
     static let fingerprint = "touchid"
+    static let squareAndArrow = "square.and.arrow.up"
 }
