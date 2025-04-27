@@ -12,6 +12,7 @@ import Firebase
 struct MyApp: App {
     let authModel = AuthAggregateModel()
     let themeManager = ThemeManager.shared
+    let loaderManager = LoaderManager.shared
 
     init() {
         _ = NetworkMonitor.shared
@@ -23,10 +24,12 @@ struct MyApp: App {
             ZStack {
                 ContentView()
                 ToastView()
-            }            
-            .environmentObject(themeManager) // ✅ Fixes the crash
+                LoaderView()
+            }
+            .environmentObject(themeManager)
             .environment(authModel)
             .environment(ToastManager.shared)
+            .environment(loaderManager)
         }
     }
 }
@@ -89,6 +92,6 @@ struct AnotherInputView: View {
 #Preview {
     MainView()
 }
-        
+
 
 

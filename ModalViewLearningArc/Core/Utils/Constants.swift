@@ -41,7 +41,7 @@ struct KeychainKeys {
 
 
 // MARK: Alert Messages
-struct AlertMessages {
+struct AlertStrings {
     struct Logout {
         static let title = "Are you sure you want to logout?"
     }
@@ -61,12 +61,18 @@ struct AlertMessages {
 }
 
 // MARK: - Loader Messages
-struct LoaderMessages {
+struct LoaderStrings {
     static let loading = "Loading..."
     static let saving = "Saving..."
     static let deleting = "Deleting..."
     static let loggingIn = "Logging in..."
     static let uploading = "Uploading..."
+    static let sending = "Sending..."
+}
+
+// MARK: - Toast Messages
+struct ToastStrings {
+    static let loading = "Loading..."
 }
 
 

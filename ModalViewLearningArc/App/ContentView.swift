@@ -26,6 +26,7 @@ struct ContentView: View {
         .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         .environment(CategoryAggregateModel(authModel: authModel))
         .environment(TagAggregateModel(authModel: authModel))
+        .environment(LoaderManager.shared)
     }
 }
 

@@ -37,7 +37,7 @@ struct EntryAddEditView: View {
 
     let lang = EntryScreenStrings.self
     let commonLang = CommonStrings.self
-    let loaderLang = LoaderMessages.self
+    let loaderLang = LoaderStrings.self
 
     var isEditing: Bool {
         existingEntry != nil

@@ -16,7 +16,7 @@ struct SettingsScreen: View {
     @State private var showLogoutAlert = false
     var lang = SettingScreenStrings.self
     var commonLang = CommonStrings.self
-    var alertLang = AlertMessages.Logout.self
+    var alertLang = AlertStrings.Logout.self
     
     var body: some View {
         RoutingView(stack: $router.stack) {

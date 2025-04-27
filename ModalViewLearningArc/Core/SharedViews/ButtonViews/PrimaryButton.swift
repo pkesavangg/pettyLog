@@ -10,40 +10,32 @@ import SwiftUI
 
 struct PrimaryButton: View {
     let title: String
-    let isLoading: Bool
     let action: () -> Void
+    let disable: Bool = false
 
     @Environment(\.appTheme) private var theme
 
     var body: some View {
         Button(action: {
-            if !isLoading {
-                action()
-            }
+            action()
         }) {
             Group {
-                if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                } else {
-                    Text(title)
-                        .frame(maxWidth: .infinity)
-                        .fontWeight(.bold)
-                        .padding()
-                }
+                Text(title)
+                    .frame(maxWidth: .infinity)
+                    .fontWeight(.bold)
+                    .padding()
             }
             .background(theme.primary)
             .foregroundColor(theme.onPrimary)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .disabled(isLoading)
+        .disabled(disable)
     }
 }
 
 
 #Preview {
-    PrimaryButton(title: "Submit", isLoading: false) {
+    PrimaryButton(title: "Submit") {
         print("Button tapped")
     }
     .environmentObject(ThemeManager.shared)

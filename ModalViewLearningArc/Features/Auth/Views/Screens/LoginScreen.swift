@@ -4,10 +4,11 @@ struct LoginScreen: View {
     @Environment(AuthAggregateModel.self) var authModel
     @Environment(\.appTheme) private var theme
     @StateObject var router: Router<AuthRoute> = .init()
+    @Environment(LoaderManager.self) var loader
+    @Environment(ToastManager.self) var toast
     
     @State private var loginForm = LoginFormConfig()
     @State private var error: String?
-    @State private var isLoading = false
     @State private var showResetPasswordAlert = false
     @State private var loginButtonClicked = false
     @State private var showCredentialsNotSavedAlert = false
@@ -17,8 +18,9 @@ struct LoginScreen: View {
     @State private var showSettingsPrompt = false
     @State private var canSaveCredentials = false
     
-    var alertLang = AlertMessages.self
+    var alertLang = AlertStrings.self
     var commonLang = CommonStrings.self
+    var loaderLang = LoaderStrings.self
     
     var body: some View {
         RoutingView(stack: $router.stack) {
@@ -59,8 +61,7 @@ struct LoginScreen: View {
                     
                     VStack(spacing: 25) {
                         PrimaryButton(
-                            title: CommonStrings.login,
-                            isLoading: isLoading
+                            title: CommonStrings.login
                         ) {
                             Task { await handleLogin() }
                         }
@@ -128,7 +129,9 @@ struct LoginScreen: View {
                 TextField(CommonStrings.email, text: $loginForm.email)
                 Button(CommonStrings.submit) {
                     Task {
+                        loader.show(message: loaderLang.loggingIn)
                         try? await authModel.sendPasswordReset(to: loginForm.email)
+                        loader.hide()
                     }
                 }
                 Button(CommonStrings.cancel, role: .cancel) {}
@@ -148,7 +151,6 @@ struct LoginScreen: View {
         } message: {
             Text(alertLang.Biometric.deniedMessage)
         }
-
         .alert(alertLang.Biometric.errorTitle, isPresented: Binding(get: {
             alertMessage != nil
         }, set: { newValue in
@@ -167,27 +169,27 @@ struct LoginScreen: View {
             Text(alertLang.Biometric.savePromptMessage)
         }
         .onAppear {
-            //KeychainManager.clearAllKeychainItems()
+            // Clear all keychain items for testing
+            // KeychainManager.clearAllKeychainItems()
         }
     }
     
     private func handleBioMetricLogin(email: String, password: String) async {
-        isLoading = true
+        loader.show(message: LoaderStrings.loggingIn)
         error = nil
         do {
             try await authModel.login(email: email, password: password)
         } catch {
             alertMessage = error.localizedDescription
         }
-        isLoading = false
+        loader.hide()
     }
     
     
     private func handleLogin() async {
         loginButtonClicked = true
         if !loginForm.isValid { return }
-        
-        isLoading = true
+        loader.show(message: loaderLang.loggingIn)
         error = nil
         do {
             try await authModel.login(email: loginForm.email, password: loginForm.password)
@@ -201,11 +203,8 @@ struct LoginScreen: View {
         } catch {
             alertMessage = error.localizedDescription
         }
-        isLoading = false
+        loader.hide()
     }
-    
-    
-    
 }
 
 
@@ -213,4 +212,5 @@ struct LoginScreen: View {
     LoginScreen()
         .environment(AuthAggregateModel())
         .environmentObject(ThemeManager.shared)
+        .environment(LoaderManager.shared)
 }
