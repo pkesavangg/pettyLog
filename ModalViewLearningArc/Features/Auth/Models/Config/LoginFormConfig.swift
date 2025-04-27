@@ -10,6 +10,7 @@ import SwiftUI
 struct LoginFormConfig {
     var email: String = ""
     var password: String = ""
+    var forgotPasswordEmail: String = ""
 
     var isEmailValid: Bool {
         FormValidator.isValidEmail(email)
