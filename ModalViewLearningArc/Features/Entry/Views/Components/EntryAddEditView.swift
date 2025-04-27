@@ -17,6 +17,8 @@ struct EntryAddEditView: View {
     @State private var showTagsSheet = false
     @Environment(EntryAggregateModel.self) private var entryModel
     @Environment(\.appTheme) private var theme
+    @Environment(LoaderManager.self) private var loader
+    @Environment(ToastManager.self) private var toast
     @EnvironmentObject private var router: Router<EntryRoute>
 
 
@@ -286,6 +288,7 @@ struct EntryAddEditView: View {
 
         // Show uploading state
         isUploading = true
+        loader.show(message: loaderLang.uploading)
 
         // Upload new images to Cloudinary
         do {
@@ -304,12 +307,15 @@ struct EntryAddEditView: View {
         } catch {
             // Handle upload error
             isUploading = false
-            // You could show an error toast or alert here
+            loader.hide()
+            toast.show("❌ \(error.localizedDescription)", duration: 3.0)
         }
     }
 
     /// Saves the entry with the provided image URLs
     private func saveEntry(imageUrls: [String]) async {
+        loader.show(message: isEditing ? loaderLang.updating : loaderLang.saving)
+
         let entry = EntryModel(
             id: existingEntry?.id ?? UUID().uuidString,
             date: DateFormatter.fullTimestampFormatter.string(from: form.date),
@@ -320,16 +326,24 @@ struct EntryAddEditView: View {
             tags: form.selectedTagIds
         )
 
-        // Save entry and navigate back
-        await entryModel.saveEntry(entry)
-        // Reset form and state
-        form.reset()
-        selectedImages.removeAll()
-        selectedUIImages.removeAll()
-        existingImageURLs.removeAll()
-        keptImageURLs.removeAll()
-        isUploading = false
-        router.navigateToRoot()
+        do {
+            // Save entry and navigate back
+            try await entryModel.saveEntry(entry)
+            toast.show("✅ Entry \(isEditing ? "updated" : "saved") successfully", duration: 3.0)
+
+            // Reset form and state
+            form.reset()
+            selectedImages.removeAll()
+            selectedUIImages.removeAll()
+            existingImageURLs.removeAll()
+            keptImageURLs.removeAll()
+            isUploading = false
+            router.navigateToRoot()
+        } catch {
+            toast.show("❌ \(error.localizedDescription)", duration: 3.0)
+        }
+
+        loader.hide()
     }
 }
 
@@ -339,5 +353,7 @@ struct EntryAddEditView: View {
         .environmentObject(Router<EntryRoute>())
         .environment(EntryAggregateModel(authModel: AuthAggregateModel(), categoryModel: CategoryAggregateModel(authModel: AuthAggregateModel()), tagModel: TagAggregateModel(authModel: AuthAggregateModel())))
         .environmentObject(ThemeManager.shared)
+        .environment(LoaderManager.shared)
+        .environment(ToastManager.shared)
         .preferredColorScheme(.light)
 }

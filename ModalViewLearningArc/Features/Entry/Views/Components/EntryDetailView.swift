@@ -16,9 +16,12 @@ struct EntryDetailView: View {
     @Environment(EntryAggregateModel.self) var entryModel
     @EnvironmentObject private var router: Router<EntryRoute>
 
+    @Environment(LoaderManager.self) var loader
+    @Environment(ToastManager.self) var toast
     @State var selectedImageData: DataWrapper? = nil
 
     var lang = EntryScreenStrings.self
+    var loaderLang = LoaderStrings.self
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -79,10 +82,17 @@ struct EntryDetailView: View {
                             .foregroundColor(theme.primary)
                     }
                     Button {
-                        Task {
-                            await entryModel.deleteEntry(id: entry.id)
-                            router.navigateToRoot()
+                        Task{
+                            loader.show(message: loaderLang.deleting)
+                            do {
+                                try await entryModel.deleteEntry(id: entry.id)
+                                router.navigateToRoot()
+                            } catch {
+                                toast.show("❌ \(error.localizedDescription)", duration: 3.0)
+                            }
+                            loader.hide()
                         }
+
                     } label: {
                         Image(systemName: AppAssets.trash)
                             .foregroundColor(theme.primary)

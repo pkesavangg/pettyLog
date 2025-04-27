@@ -117,7 +117,7 @@ class CloudinaryService {
                 switch result {
                 case .success(let url):
                     uploadedUrls.append(url)
-                case .failure(let error):
+                case .failure(_):
                     failedUploads += 1
                 }
                 

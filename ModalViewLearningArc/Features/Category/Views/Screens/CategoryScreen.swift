@@ -34,7 +34,7 @@ struct CategoryScreen: View {
             }
             
             Button(action: {
-                router.navigate(to: .addEditTag(nil))
+                router.navigate(to: .addEditCategory(nil))
             }) {
                 Label(lang.createNewCategory, systemImage: AppAssets.plus)
                     .fontWeight(.semibold)

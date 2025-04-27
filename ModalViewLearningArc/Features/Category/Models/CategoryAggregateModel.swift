@@ -22,7 +22,6 @@ final class CategoryAggregateModel {
         Task {
             await loadCategories()
         }
-        print("CategoryAggregateModel initialized with authModel:")
     }
 
     func loadCategories() async {
@@ -35,30 +34,30 @@ final class CategoryAggregateModel {
         isLoading = false
     }
 
-    func saveCategory(_ category: CategoryModel) async {
+    func saveCategory(_ category: CategoryModel) async throws {
         do {
             try await service.addCategory(category)
             await loadCategories()
         } catch {
-            print("Failed to save category: \(error)")
+            throw error
         }
     }
     
-    func updateCategory(_ category: CategoryModel) async {
+    func updateCategory(_ category: CategoryModel) async throws {
         do {
             try await service.updateCategory(category)
             await loadCategories()
         } catch {
-            print("Failed to update category: \(error)")
+            throw error
         }
     }
     
-    func deleteCategory(id: String) async {
+    func deleteCategory(id: String) async throws{
         do {
             try await service.deleteCategory(withId: id)
             await loadCategories()
         } catch {
-            print("Failed to delete category: \(error)")
+            throw error
         }
     }
 }

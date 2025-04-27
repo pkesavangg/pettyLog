@@ -137,7 +137,7 @@ struct FullScreenImageView: View {
         // Download the image data
         URLSession.shared.dataTask(with: imageURL) { data, response, error in
             DispatchQueue.main.async {
-                if let error = error {
+                if error != nil {
                     self.showShareError(message: "Failed to download image")
                     return
                 }

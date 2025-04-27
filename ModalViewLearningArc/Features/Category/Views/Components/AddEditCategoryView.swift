@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AddEditCategoryView: View {
     var existingCategory: CategoryModel? = nil
-    
+
     @State var selectedIcon: String = ""
     @State var categoryName: String = ""
     @State var showColorSelection: Bool = false
@@ -17,18 +17,21 @@ struct AddEditCategoryView: View {
     @Environment(\.appTheme) private var theme
     @Environment(CategoryAggregateModel.self) var categoryModel
     @Environment(\.presentationMode) var presentationMode
+    @Environment(LoaderManager.self) var loader
+    @Environment(ToastManager.self) var toast
     @EnvironmentObject private var router: Router<SettingsRoute>
     @State var isFormDirty: Bool = false
     let lang = CategoryScreenStrings.self
-    
+    let loaderLang = LoaderStrings.self
+
     var displayColor: Color {
         UIColor(hex: selectedColor).map(Color.init) ?? .clear
     }
-    
+
     var isEditing: Bool {
         existingCategory != nil
     }
-    
+
     var errorMessage: String {
         let trimmed = categoryName.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
@@ -39,7 +42,7 @@ struct AddEditCategoryView: View {
         }
         return ""
     }
-    
+
     var body: some View {
         VStack {
             VStack {
@@ -56,16 +59,23 @@ struct AddEditCategoryView: View {
                         CustomTextField(value: $categoryName, placeholder: lang.categoryFieldPlaceholder, inputType: .text,
                                         isDirty: $isFormDirty)
                         ValidationMessageView(message: errorMessage, show: isFormDirty)
-                        
+
                     }
                     .padding(.horizontal, .p10)
 
-                    
+
                     if let existingCategory = existingCategory {
                         Button {
                             Task {
-                                await categoryModel.deleteCategory(id: existingCategory.id)
-                                router.navigateBack()
+                                loader.show(message: loaderLang.deleting)
+                                do {
+                                    try await categoryModel.deleteCategory(id: existingCategory.id)
+                                    toast.show("✅ Category deleted successfully", duration: 3.0)
+                                    router.navigateBack()
+                                } catch {
+                                    toast.show("❌ \(error.localizedDescription)", duration: 3.0)
+                                }
+                                loader.hide()
                             }
                         } label: {
                             Image(systemName: AppAssets.trash)
@@ -76,9 +86,9 @@ struct AddEditCategoryView: View {
                 }
                 .padding(.horizontal, 20)
             }
-            
-            
-            
+
+
+
             IconSelectionView(selectedIcon: $selectedIcon)
                 .padding(.top)
         }
@@ -97,13 +107,13 @@ struct AddEditCategoryView: View {
                     router.navigateBack()
                 }
             }
-            
+
             // Delete + Save/Update on the right
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
                     // Show Delete only in edit mode
-                    
-                    
+
+
                     // Save or Update button
                     LinkButton(
                         title: isEditing ? CommonStrings.update.uppercased() : CommonStrings.save.uppercased(),
@@ -118,8 +128,15 @@ struct AddEditCategoryView: View {
                             isDefault: false
                         )
                         Task {
-                            await categoryModel.saveCategory(category)
-                            router.navigateBack()
+                            loader.show(message: isEditing ? loaderLang.updating : loaderLang.saving)
+                            do {
+                                try await categoryModel.saveCategory(category)
+                                toast.show("✅ Category \(isEditing ? "updated" : "saved") successfully", duration: 3.0)
+                                router.navigateBack()
+                            } catch {
+                                toast.show("❌ \(error.localizedDescription)", duration: 3.0)
+                            }
+                            loader.hide()
                         }
                     }
                 }
@@ -139,4 +156,6 @@ struct AddEditCategoryView: View {
     AddEditCategoryView()
         .environmentObject(ThemeManager.shared)
         .environment(CategoryAggregateModel(authModel: AuthAggregateModel()))
+        .environment(LoaderManager.shared)
+        .environment(ToastManager.shared)
 }

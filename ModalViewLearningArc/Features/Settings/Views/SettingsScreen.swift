@@ -13,6 +13,9 @@ struct SettingsScreen: View {
     @StateObject var router: Router<SettingsRoute> = .init()
     var settingAggregateModel: SettingsAggregateModel = .init()
     
+    @Environment(LoaderManager.self) private var loader
+    @Environment(ToastManager.self) private var toast
+    
     @State private var showLogoutAlert = false
     var lang = SettingScreenStrings.self
     var commonLang = CommonStrings.self
@@ -126,11 +129,15 @@ private extension SettingsScreen {
                 .alert(isPresented: $showLogoutAlert) {
                     Alert(
                         title: Text(alertLang.title),
-                        primaryButton: .default(Text(commonLang.yes.uppercased())) {
-                            do {
-                                try authModel.logout()
-                            } catch {
-                                print("Logout error: \(error)")
+                        primaryButton: .default(Text(commonLang.yes.uppercased())) {                            
+                            Task {
+                                loader.show()
+                                do {
+                                    try await authModel.logout()
+                                } catch {
+                                    toast.show(error.localizedDescription)
+                                }
+                                loader.hide()
                             }
                         },
                         secondaryButton: .cancel(Text(commonLang.cancel.uppercased()))
@@ -149,4 +156,6 @@ private extension SettingsScreen {
         .environmentObject(ThemeManager.shared)
         .environmentObject(Router<SettingsRoute>())
         .environment(AuthAggregateModel())
+        .environment(LoaderManager.shared)
+        .environment(ToastManager.shared)
 }

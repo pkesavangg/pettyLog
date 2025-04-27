@@ -146,7 +146,7 @@ final class EntryAggregateModel {
         }
     }
 
-    func saveEntry(_ entry: EntryModel) async {
+    func saveEntry(_ entry: EntryModel) async throws{
         
             isLoading = true
             defer { isLoading = false }
@@ -154,12 +154,12 @@ final class EntryAggregateModel {
                 try await service.addEntry(entry)
                 await loadEntries()
             } catch {
-                print("Failed to save entry: \(error)")
+                throw error
             }
         
     }
 
-    func updateEntry(_ entry: EntryModel) {
+    func updateEntry(_ entry: EntryModel) async throws {
         Task {
             isLoading = true
             defer { isLoading = false }
@@ -168,12 +168,12 @@ final class EntryAggregateModel {
                 try await service.updateEntry(entry)
                 await loadEntries()
             } catch {
-                print("Failed to update entry: \(error)")
+                throw error
             }
         }
     }
 
-    func deleteEntry(id: String) async {
+    func deleteEntry(id: String) async throws {
             isLoading = true
             defer { isLoading = false }
 
@@ -181,7 +181,7 @@ final class EntryAggregateModel {
                 try await service.deleteEntry(withId: id)
                 await loadEntries()
             } catch {
-                print("Failed to delete entry: \(error)")
+                throw error
             }
     }
 }

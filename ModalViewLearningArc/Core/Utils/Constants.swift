@@ -68,6 +68,7 @@ struct LoaderStrings {
     static let loggingIn = "Logging in..."
     static let uploading = "Uploading..."
     static let sending = "Sending..."
+    static let updating = "Updating..."
 }
 
 // MARK: - Toast Messages

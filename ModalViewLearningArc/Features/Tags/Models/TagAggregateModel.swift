@@ -22,7 +22,6 @@ final class TagAggregateModel {
         Task {
             await loadTags()
         }
-        print("TagAggregateModel initialized with authModel:")
     }
 
     func loadTags() async {
@@ -35,30 +34,30 @@ final class TagAggregateModel {
         isLoading = false
     }
 
-    func saveTag(_ tag: TagModel) async {
+    func saveTag(_ tag: TagModel) async throws {
         do {
             try await service.addTag(tag)
             await loadTags()
         } catch {
-            print("Failed to save tag: \(error)")
+            throw error
         }
     }
 
-    func updateTag(_ tag: TagModel) async {
+    func updateTag(_ tag: TagModel) async throws {
         do {
             try await service.updateTag(tag)
             await loadTags()
         } catch {
-            print("Failed to update tag: \(error)")
+            throw error
         }
     }
 
-    func deleteTag(id: String) async {
+    func deleteTag(id: String) async throws{
         do {
             try await service.deleteTag(withId: id)
             await loadTags()
         } catch {
-            print("Failed to delete tag: \(error)")
+            throw error
         }
     }
 }
