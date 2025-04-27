@@ -55,73 +55,14 @@ struct EntryDetailView: View {
             }
 
             // Images section
-            VStack(alignment: .leading, spacing: 8) {
-                // Image count indicator
-                HStack {
-                    Image(systemName: AppAssets.photo)
-                        .foregroundColor(theme.primary)
-                    Text(entry.imageURLs.isEmpty ? lang.bills : "\(entry.imageURLs.count) image(s) attached")
-                        .font(.caption)
-                        .foregroundColor(theme.onSurface.opacity(0.7))
-                }
-
-                if !entry.imageURLs.isEmpty {
-                    // Horizontal image scroll view
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(entry.imageURLs, id: \.self) { imageURLString in
-                                if let imageURL = URL(string: imageURLString) {
-                                    AsyncImage(url: imageURL) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                                .frame(width: 150, height: 150)
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 150, height: 150)
-                                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                                .onTapGesture {
-                                                    if imageURL.absoluteString.hasPrefix("http") {
-                                                        selectedImageData = DataWrapper(value: imageURL.absoluteString)
-                                                    }
-                                                }
-                                        case .failure:
-                                            Image(systemName: AppAssets.photoWithExclamationMark)
-                                                .foregroundColor(theme.error)
-                                                .frame(width: 150, height: 150)
-                                        @unknown default:
-                                            EmptyView()
-                                        }
-                                    }
-                                    .frame(width: 150, height: 150)
-                                    .background(Color.gray.opacity(0.1))
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                    )
-                                } else {
-                                    Image(systemName: AppAssets.photoWithExclamationMark)
-                                        .foregroundColor(theme.error)
-                                        .frame(width: 150, height: 150)
-                                        .background(Color.gray.opacity(0.1))
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                }
-                            }
-                        }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 4)
+            EntryImageSectionView(
+                imageURLs: entry.imageURLs,
+                onImageTap: { imageURLString in
+                    if let url = URL(string: imageURLString), url.absoluteString.hasPrefix("http") {
+                        selectedImageData = DataWrapper(value: url.absoluteString)
                     }
-                } else {
-                    BillsPlaceholderView()
                 }
-            }
+            )
             Spacer()
         }
         .padding()

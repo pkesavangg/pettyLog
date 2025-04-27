@@ -18,31 +18,31 @@ struct EntryAddEditView: View {
     @Environment(EntryAggregateModel.self) private var entryModel
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var router: Router<EntryRoute>
-    
-    
+
+
     @State var selectedTagsItems: [TagModel] = []
-    
+
     // For PhotosPicker and camera
     @State private var selectedItems = [PhotosPickerItem]()
     @State private var selectedImages = [Image]()
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
     @State private var selectedUIImages: [UIImage] = []
-    
+
     // For existing images from URLs
     @State private var existingImageURLs: [String] = []
     @State private var keptImageURLs: [String] = []
-    
+
     @State private var isUploading = false
-    
+
     let lang = EntryScreenStrings.self
     let commonLang = CommonStrings.self
     let loaderLang = LoaderMessages.self
-    
+
     var isEditing: Bool {
         existingEntry != nil
     }
-    
+
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 20) {
@@ -64,7 +64,7 @@ struct EntryAddEditView: View {
                                     isDirty: $form.isAmountFieldDirty)
                     ValidationMessageView(message: form.amountError ?? "", show: form.isAmountFieldDirty)
                 }
-                
+
                 VStack {
                     CustomTextField(value: $form.description,
                                     placeholder: lang.descriptionFieldPlaceholder,
@@ -73,7 +73,7 @@ struct EntryAddEditView: View {
                                     isDirty: $form.isDescFieldDirty)
                     ValidationMessageView(message: form.descriptionError ?? "", show: form.isDescFieldDirty)
                 }
-                
+
                 Button {
                     showCategorySheet = true
                 } label: {
@@ -92,9 +92,9 @@ struct EntryAddEditView: View {
                         }
                     }
                 }
-                
-                
-                
+
+
+
                 HStack {
                     VStack(alignment: .leading) {
                         Text(lang.chooseFiles)
@@ -126,7 +126,7 @@ struct EntryAddEditView: View {
                     if selectedItems.isEmpty {
                         return
                     }
-                    
+
                     Task {
                         // Process all selected items
                         for item in selectedItems {
@@ -136,7 +136,7 @@ struct EntryAddEditView: View {
                                 selectedImages.append(Image(uiImage: uiImage)) // for preview
                             }
                         }
-                        
+
                         // Clear the selection after processing to prevent duplicates
                         // This needs to be done on the main thread since it affects the UI
                         await MainActor.run {
@@ -158,56 +158,27 @@ struct EntryAddEditView: View {
                         .formLabelStyle()
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                
+
                 if hasAnyImages {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack {
-                            // Display existing images from URLs
-                            ForEach(keptImageURLs, id: \.self) { urlString in
-                                ExistingImageView(imageURL: urlString) {
-                                    // Remove from kept URLs when deleted
-                                    if let index = keptImageURLs.firstIndex(of: urlString) {
-                                        keptImageURLs.remove(at: index)
-                                    }
-                                }
+                    EditableImageGridView(
+                        existingImageURLs: keptImageURLs,
+                        newImages: selectedImages,
+                        onExistingImageDelete: { urlString in
+                            // Remove from kept URLs when deleted
+                            if let index = keptImageURLs.firstIndex(of: urlString) {
+                                keptImageURLs.remove(at: index)
                             }
-                            
-                            // Display newly selected images
-                            ForEach(0..<selectedImages.count, id: \.self) { i in
-                                ZStack(alignment: .topTrailing) {
-                                    selectedImages[i]
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 150, height: 150)
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                                        )
-                                    
-                                    Button(action: {
-                                        selectedImages.remove(at: i)
-                                        selectedUIImages.remove(at: i)
-                                    }) {
-                                        Image(systemName: AppAssets.xmarkCircle)
-                                            .foregroundColor(theme.primary
-                                                .opacity(0.8))
-                                            .background(Circle().fill(theme.primary.opacity(0.2)))
-                                            .font(.system(size: 15))
-                                    }
-                                    .offset(x: 4, y: -4)
-                                    .padding(.top, 8)
-                                    .padding(.trailing, 4)
-                                }
-                                .padding(.trailing, 8)
-                            }
+                        },
+                        onNewImageDelete: { index in
+                            selectedImages.remove(at: index)
+                            selectedUIImages.remove(at: index)
                         }
-                    }
+                    )
                 } else {
                     // Placeholder when no images are attached
                     BillsPlaceholderView()
                 }
-                
+
                 VStack(alignment: .leading) {
                     Text(lang.tagFieldLabel)
                         .formLabelStyle()
@@ -274,12 +245,12 @@ struct EntryAddEditView: View {
                 form.description = entry.description
                 form.selectedCategoryId = entry.category
                 form.selectedTagIds = entry.tags ?? []
-                
+
                 // Initialize existing image URLs
                 existingImageURLs = entry.imageURLs
                 keptImageURLs = entry.imageURLs
             }
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 let categories = entryModel.getCategories()
                 if form.selectedCategoryId.isEmpty, let first = categories.first {
@@ -288,34 +259,34 @@ struct EntryAddEditView: View {
             }
         }
     }
-    
+
     private var selectedCategory: CategoryModel? {
         entryModel.getCategories().first { $0.id == form.selectedCategoryId }
     }
-    
+
     private var selectedTags: [TagModel] {
         entryModel.getTags()
             .filter { form.selectedTagIds.contains($0.id) }
-        
+
     }
-    
+
     private var hasAnyImages: Bool {
         !keptImageURLs.isEmpty || !selectedUIImages.isEmpty
     }
-    
+
     /// Uploads images to Cloudinary and saves the entry with the image URLs
     private func saveEntryWithImages() async {
         guard form.isValid else { return }
-        
+
         // If no new images to upload, just save the entry with kept URLs
         if selectedUIImages.isEmpty {
             await saveEntry(imageUrls: keptImageURLs)
             return
         }
-        
+
         // Show uploading state
         isUploading = true
-        
+
         // Upload new images to Cloudinary
         do {
             let newImageUrls = try await withCheckedThrowingContinuation { continuation in
@@ -323,11 +294,11 @@ struct EntryAddEditView: View {
                     continuation.resume(with: result)
                 }
             }
-            
+
             // Combine kept existing URLs with newly uploaded URLs
             var allImageUrls = keptImageURLs
             allImageUrls.append(contentsOf: newImageUrls)
-            
+
             // Save entry with all image URLs
             await saveEntry(imageUrls: allImageUrls)
         } catch {
@@ -336,7 +307,7 @@ struct EntryAddEditView: View {
             // You could show an error toast or alert here
         }
     }
-    
+
     /// Saves the entry with the provided image URLs
     private func saveEntry(imageUrls: [String]) async {
         let entry = EntryModel(
@@ -348,7 +319,7 @@ struct EntryAddEditView: View {
             category: form.selectedCategoryId,
             tags: form.selectedTagIds
         )
-        
+
         // Save entry and navigate back
         await entryModel.saveEntry(entry)
         // Reset form and state
