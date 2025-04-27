@@ -64,6 +64,21 @@ struct HideTabBarModifier: ViewModifier {
     }
 }
 
+struct PillStyleModifier: ViewModifier {
+    @Environment(\.appTheme) private var theme
+
+    var backgroundColor: Color?
+    var foregroundColor: Color?
+
+    func body(content: Content) -> some View {
+        content
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background((backgroundColor ?? theme.primary.opacity(0.2)))
+            .foregroundColor(foregroundColor ?? theme.primary)
+            .clipShape(Capsule())
+    }
+}
 
 extension View {
     func labelStyle() -> some View {
@@ -76,5 +91,12 @@ extension View {
     
     func listScreenStyle(title: String, tabBarHidden: Bool = true) -> some View {
         self.modifier(ListScreenStyleModifier(title: title, tabBarHidden: tabBarHidden))
+    }
+    
+    func pillStyle(
+        backgroundColor: Color? = nil,
+        foregroundColor: Color? = nil
+    ) -> some View {
+        self.modifier(PillStyleModifier(backgroundColor: backgroundColor, foregroundColor: foregroundColor))
     }
 }

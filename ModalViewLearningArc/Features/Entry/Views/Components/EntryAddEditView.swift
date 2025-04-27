@@ -19,12 +19,20 @@ struct EntryAddEditView: View {
     @Environment(\.appTheme) private var theme
     @EnvironmentObject private var router: Router<EntryRoute>
     
+    
+    @State var selectedTagsItems: [TagModel] = []
+    
+    // For PhotosPicker and camera
     @State private var selectedItems = [PhotosPickerItem]()
     @State private var selectedImages = [Image]()
-    
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
     @State private var selectedUIImages: [UIImage] = []
+    
+    // For existing images from URLs
+    @State private var existingImageURLs: [String] = []
+    @State private var keptImageURLs: [String] = []
+    
     @State private var isUploading = false
     
     let lang = EntryScreenStrings.self
@@ -85,23 +93,7 @@ struct EntryAddEditView: View {
                     }
                 }
                 
-                Button {
-                    showTagsSheet = true
-                } label: {
-                    HStack {
-                        Text(lang.tagFieldLabel)
-                            .formLabelStyle()
-                        Spacer()
-                        Group {
-                            if selectedTagNames.count == 0 {
-                                Text(lang.addPlus)
-                            } else {
-                                Text(selectedTagNames.joined(separator: ", "))
-                            }
-                        }
-                        .foregroundColor(theme.onSurface)
-                    }
-                }
+                
                 
                 HStack {
                     VStack(alignment: .leading) {
@@ -130,13 +122,25 @@ struct EntryAddEditView: View {
                     Spacer()
                 }
                 .onChange(of: selectedItems) {
+                    // Skip processing if the selection is empty (happens when we clear the selection)
+                    if selectedItems.isEmpty {
+                        return
+                    }
+                    
                     Task {
+                        // Process all selected items
                         for item in selectedItems {
                             if let data = try? await item.loadTransferable(type: Data.self),
                                let uiImage = UIImage(data: data) {
                                 selectedUIImages.append(uiImage)
                                 selectedImages.append(Image(uiImage: uiImage)) // for preview
                             }
+                        }
+                        
+                        // Clear the selection after processing to prevent duplicates
+                        // This needs to be done on the main thread since it affects the UI
+                        await MainActor.run {
+                            selectedItems.removeAll()
                         }
                     }
                 }
@@ -150,14 +154,25 @@ struct EntryAddEditView: View {
                     CameraPicker(image: $capturedImage)
                 }
                 HStack {
-                    Text(selectedUIImages.count > 0 ? lang.selectedImages : lang.bills)
+                    Text(lang.bills)
                         .formLabelStyle()
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                if selectedUIImages.count > 0 {
+                if hasAnyImages {
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack {
+                            // Display existing images from URLs
+                            ForEach(keptImageURLs, id: \.self) { urlString in
+                                ExistingImageView(imageURL: urlString) {
+                                    // Remove from kept URLs when deleted
+                                    if let index = keptImageURLs.firstIndex(of: urlString) {
+                                        keptImageURLs.remove(at: index)
+                                    }
+                                }
+                            }
+                            
+                            // Display newly selected images
                             ForEach(0..<selectedImages.count, id: \.self) { i in
                                 ZStack(alignment: .topTrailing) {
                                     selectedImages[i]
@@ -193,18 +208,27 @@ struct EntryAddEditView: View {
                     BillsPlaceholderView()
                 }
                 
-                // Loading indicator for image uploads
-                if isUploading {
-                    VStack {
-                        ProgressView(loaderLang.uploading)
-                            .padding()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
+                VStack(alignment: .leading) {
+                    Text(lang.tagFieldLabel)
+                        .formLabelStyle()
+                    WrappingChipsView(tags: selectedTags,
+                              chipContent: { tag in
+                        HStack(spacing: 6) {
+                            Text(tag.name)
+                            Image(systemName: AppAssets.xmarkCircle)
+                                .onTapGesture {
+                                    if let index = form.selectedTagIds.firstIndex(of: tag.id) {
+                                        form.selectedTagIds.remove(at: index)
+                                    }
+                                }
+                        }
+                        .pillStyle(backgroundColor: tag.displayColor, foregroundColor: .white)
+                    },
+                              onAddTapped: {
+                        showTagsSheet = true
+                    })
                     .padding()
                 }
-                
                 Spacer()
             }
             .padding()
@@ -229,7 +253,7 @@ struct EntryAddEditView: View {
                 selectionMode: .single,
                 displayName: { $0.name },
                 selectedSingleId: $form.selectedCategoryId,
-                selectedMultipleIds: .constant([]) // Not used in single mode
+                selectedMultipleIds: .constant([])
             )
         }
         .sheet(isPresented: $showTagsSheet) {
@@ -238,17 +262,22 @@ struct EntryAddEditView: View {
                 items: entryModel.getTags(),
                 selectionMode: .multiple,
                 displayName: { $0.name },
-                selectedSingleId: .constant(""), // Not used in multiple mode
+                selectedSingleId: .constant(""),
                 selectedMultipleIds: $form.selectedTagIds
             )
         }
         .onAppear {
             if let entry = existingEntry {
+                // Initialize form with existing entry data
                 form.date = DateFormatter.fullTimestampFormatter.date(from: entry.date) ?? .now
                 form.amount = String(entry.amount)
                 form.description = entry.description
                 form.selectedCategoryId = entry.category
                 form.selectedTagIds = entry.tags ?? []
+                
+                // Initialize existing image URLs
+                existingImageURLs = entry.imageURLs
+                keptImageURLs = entry.imageURLs
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -264,38 +293,42 @@ struct EntryAddEditView: View {
         entryModel.getCategories().first { $0.id == form.selectedCategoryId }
     }
     
-    private var selectedTagNames: [String] {
+    private var selectedTags: [TagModel] {
         entryModel.getTags()
             .filter { form.selectedTagIds.contains($0.id) }
-            .map(\.name)
+        
+    }
+    
+    private var hasAnyImages: Bool {
+        !keptImageURLs.isEmpty || !selectedUIImages.isEmpty
     }
     
     /// Uploads images to Cloudinary and saves the entry with the image URLs
     private func saveEntryWithImages() async {
         guard form.isValid else { return }
         
-        // If no images to upload, just save the entry
+        // If no new images to upload, just save the entry with kept URLs
         if selectedUIImages.isEmpty {
-            await saveEntry(imageUrls: existingEntry?.imageURLs ?? [])
+            await saveEntry(imageUrls: keptImageURLs)
             return
         }
         
         // Show uploading state
         isUploading = true
         
-        // Upload images to Cloudinary
+        // Upload new images to Cloudinary
         do {
-            let imageUrls = try await withCheckedThrowingContinuation { continuation in
+            let newImageUrls = try await withCheckedThrowingContinuation { continuation in
                 CloudinaryService.shared.uploadImages(selectedUIImages) { result in
                     continuation.resume(with: result)
                 }
             }
             
-            // Combine with existing image URLs if editing
-            var allImageUrls = existingEntry?.imageURLs ?? []
-            allImageUrls.append(contentsOf: imageUrls)
+            // Combine kept existing URLs with newly uploaded URLs
+            var allImageUrls = keptImageURLs
+            allImageUrls.append(contentsOf: newImageUrls)
             
-            // Save entry with image URLs
+            // Save entry with all image URLs
             await saveEntry(imageUrls: allImageUrls)
         } catch {
             // Handle upload error
@@ -316,15 +349,16 @@ struct EntryAddEditView: View {
             tags: form.selectedTagIds
         )
         
+        // Save entry and navigate back
+        await entryModel.saveEntry(entry)
         // Reset form and state
         form.reset()
         selectedImages.removeAll()
         selectedUIImages.removeAll()
+        existingImageURLs.removeAll()
+        keptImageURLs.removeAll()
         isUploading = false
-        
-        // Save entry and navigate back
-        await entryModel.saveEntry(entry)
-        router.navigateBack()
+        router.navigateToRoot()
     }
 }
 

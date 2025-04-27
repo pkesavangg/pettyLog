@@ -8,12 +8,6 @@
 import SwiftUI
 import Foundation
 
-struct DataWrapper: Identifiable {
-    var id: String { value } // id must be unique
-    let value: String
-}
-
-
 struct EntryDetailView: View {
     let entry: EntryModel
 
@@ -27,7 +21,7 @@ struct EntryDetailView: View {
     var lang = EntryScreenStrings.self
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             // Amount
             Text("₹\(String(format: "%.2f", entry.amount))")
                 .font(.title2)
@@ -51,11 +45,13 @@ struct EntryDetailView: View {
 
             // Tags
             if !tags.isEmpty {
-                HStack(spacing: 8) {
-                    ForEach(tags, id: \.id) { tag in
-                        TagChipView(tag: tag)
-                    }
-                }
+                WrappingChipsView(
+                    tags: tags,
+                    showAddButton: false
+                ) { tag in
+                    Text(tag.name)
+                        .pillStyle(backgroundColor: tag.displayColor, foregroundColor: .white)
+                } onAddTapped: {}
             }
 
             // Images section
@@ -107,8 +103,6 @@ struct EntryDetailView: View {
                                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                     )
                                 } else {
-
-                                    // Display a placeholder for invalid URLs
                                     Image(systemName: AppAssets.photoWithExclamationMark)
                                         .foregroundColor(theme.error)
                                         .frame(width: 150, height: 150)
@@ -125,7 +119,6 @@ struct EntryDetailView: View {
                         .padding(.horizontal, 4)
                     }
                 } else {
-                    // Placeholder when no images are attached
                     BillsPlaceholderView()
                 }
             }
