@@ -13,6 +13,7 @@ struct MyApp: App {
     let authModel = AuthAggregateModel()
     let themeManager = ThemeManager.shared
     let loaderManager = LoaderManager.shared
+    let alertManager = AlertManager.shared
 
     init() {
         _ = NetworkMonitor.shared
@@ -25,11 +26,13 @@ struct MyApp: App {
                 ContentView()
                 ToastView()
                 LoaderView()
+                AlertView()
             }
             .environmentObject(themeManager)
             .environment(authModel)
             .environment(ToastManager.shared)
             .environment(loaderManager)
+            .environment(alertManager)
         }
     }
 }
