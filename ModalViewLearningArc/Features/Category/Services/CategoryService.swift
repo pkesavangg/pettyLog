@@ -11,35 +11,31 @@ import FirebaseFirestore
 
 final class CategoryService {
     private let db = Firestore.firestore()
-    private var userId: String
 
-    init(userId: String) {
-        self.userId = userId
-    }
 
-    private var userCategoriesPath: CollectionReference {
-        db.collection("users").document(userId).collection("categories")
+    private var categoriesPath: CollectionReference {
+        db.collection("categories")
     }
 
     func addCategory(_ category: CategoryModel) async throws {
-        let ref = userCategoriesPath.document(category.id)
+        let ref = categoriesPath.document(category.id)
         try ref.setData(from: category) // ✅ Encodes all properties into Firestore
     }
 
     func getCategories() async throws -> [CategoryModel] {
-        let snapshot = try await userCategoriesPath.getDocuments()
+        let snapshot = try await categoriesPath.getDocuments()
         return try snapshot.documents.compactMap {
             try $0.data(as: CategoryModel.self)
         }
     }
 
     func updateCategory(_ category: CategoryModel) async throws {
-        let ref = userCategoriesPath.document(category.id)
+        let ref = categoriesPath.document(category.id)
         try ref.setData(from: category, merge: true)
     }
 
     func deleteCategory(withId id: String) async throws {
-        try await userCategoriesPath.document(id).delete()
+        try await categoriesPath.document(id).delete()
     }
 }
 

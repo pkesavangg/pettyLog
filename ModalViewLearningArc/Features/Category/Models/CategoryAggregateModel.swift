@@ -15,10 +15,10 @@ final class CategoryAggregateModel {
     private let authModel: AuthAggregateModel
     private let service: CategoryService
     var isLoading: Bool = true
-    
+
     init(authModel: AuthAggregateModel) {
         self.authModel = authModel
-        self.service = CategoryService(userId: authModel.currentUser?.uid ?? "unknown")
+        self.service = CategoryService()
         Task {
             await loadCategories()
         }
@@ -42,7 +42,7 @@ final class CategoryAggregateModel {
             throw error
         }
     }
-    
+
     func updateCategory(_ category: CategoryModel) async throws {
         do {
             try await service.updateCategory(category)
@@ -51,7 +51,7 @@ final class CategoryAggregateModel {
             throw error
         }
     }
-    
+
     func deleteCategory(id: String) async throws{
         do {
             try await service.deleteCategory(withId: id)

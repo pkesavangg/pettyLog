@@ -120,7 +120,7 @@ final class EntryAggregateModel {
         self.authModel = authModel
         self.categoryModel = categoryModel
         self.tagModel = tagModel
-        self.service = EntryService(userId: authModel.currentUser?.uid ?? "unknown")
+        self.service = EntryService()
 
         Task {
             await loadEntries()
@@ -147,7 +147,7 @@ final class EntryAggregateModel {
     }
 
     func saveEntry(_ entry: EntryModel) async throws{
-        
+
             isLoading = true
             defer { isLoading = false }
             do {
@@ -156,7 +156,7 @@ final class EntryAggregateModel {
             } catch {
                 throw error
             }
-        
+
     }
 
     func updateEntry(_ entry: EntryModel) async throws {

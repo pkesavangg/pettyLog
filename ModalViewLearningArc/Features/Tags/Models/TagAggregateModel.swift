@@ -18,7 +18,7 @@ final class TagAggregateModel {
 
     init(authModel: AuthAggregateModel) {
         self.authModel = authModel
-        self.service = TagService(userId: authModel.currentUser?.uid ?? "unknown")
+        self.service = TagService()
         Task {
             await loadTags()
         }
