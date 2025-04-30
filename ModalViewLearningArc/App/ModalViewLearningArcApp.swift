@@ -28,6 +28,7 @@ struct MyApp: App {
                 LoaderView()
                 AlertView()
             }
+            .themeable()
             .environmentObject(themeManager)
             .environment(authModel)
             .environment(ToastManager.shared)

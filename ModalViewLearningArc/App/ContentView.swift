@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AuthAggregateModel.self) var authModel
     @EnvironmentObject var themeManager: ThemeManager
-    
+
     var body: some View {
         Group {
             switch authModel.authState {
@@ -22,11 +22,9 @@ struct ContentView: View {
                 LoginScreen()
             }
         }
-        .themeable()
         .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         .environment(CategoryAggregateModel(authModel: authModel))
         .environment(TagAggregateModel(authModel: authModel))
-        .environment(LoaderManager.shared)
     }
 }
 

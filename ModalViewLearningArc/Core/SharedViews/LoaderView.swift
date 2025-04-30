@@ -24,7 +24,7 @@ struct LoaderView: View {
                         .scaleEffect(1.5)
                         .tint(theme.primary)
                     
-                    Text(loaderManager.message)
+                    Text(theme.primary.description)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(theme.onSurface)
@@ -38,12 +38,15 @@ struct LoaderView: View {
             }
             .transition(.opacity)
             .animation(.easeInOut(duration: 0.2), value: loaderManager.isVisible)
+            .accentColor(theme.primary)
         }
     }
 }
 
 #Preview {
     let loaderManager = LoaderManager.shared
+    var theme = ThemeManager.shared
+    
     loaderManager.show(message: "Loading your data...")
     
     return ZStack {
