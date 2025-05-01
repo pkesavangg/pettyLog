@@ -11,6 +11,7 @@ struct EntryScreen: View {
     @Environment(EntryAggregateModel.self) var entryModel
     @StateObject var router: Router<EntryRoute> = .init()
     @Environment(\.appTheme) private var theme
+    @State private var showExpenseDetails = false
     let lang = EntryScreenStrings.self
 
     var body: some View {
@@ -21,10 +22,13 @@ struct EntryScreen: View {
                     getMonthView()
                     // Total expense header
                     if !entryModel.entriesForSelectedMonth.isEmpty && !entryModel.isLoading {
-                        
+
                         MonthTotalHeaderView(
                             totalAmount: entryModel.totalExpenseForSelectedMonth,
-                            entriesCount: entryModel.entriesForSelectedMonth.count
+                            entriesCount: entryModel.entriesForSelectedMonth.count,
+                            onTap: {
+                                showExpenseDetails = true
+                            }
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                         .padding(.top, .p8)
@@ -67,6 +71,14 @@ struct EntryScreen: View {
                 }
             }
             .listScreenStyle(title: lang.title, tabBarHidden: false)
+            .sheet(isPresented: $showExpenseDetails) {
+                ExpenseDetailsView(
+                    selectedMonth: entryModel.selectedMonth,
+                    entries: entryModel.entriesForSelectedMonth,
+                    categories: entryModel.getCategories(),
+                    totalAmount: entryModel.totalExpenseForSelectedMonth
+                )
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     HStack {

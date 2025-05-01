@@ -45,12 +45,12 @@ struct AlertStrings {
     struct Logout {
         static let title = "Are you sure you want to logout?"
     }
-    
+
     struct ResetPassword {
         static let title = "Reset Password"
         static let message = "We’ll send a link to reset your password if your email is registered."
     }
-    
+
     struct Biometric {
         static let errorTitle = "Biometric Error"
         static let deniedTitle = "Biometric Access Denied"
@@ -95,14 +95,14 @@ struct ErrorMessages {
         static let mustBePositive = "Amount must be a positive number"
         static let cantExceedMaxValue = "Amount cannot exceed 30,000"
     }
-    
+
     struct Auth {
         static let invalidEmail = "Please enter a valid email."
         static let weakPassword = "The password is too weak."
         static let incorrectPassword = "The password is incorrect."
         static let accountNotFound = "No account found for this email."
         static let duplicateAccount = "An account with this email already exists."
-        
+
         // New biometric + credential messages
         static let biometricAccessDenied = "You denied biometrics access to the app. If you want to enable it, go to Settings > ModalViewLearningArc and enable biometrics."
         static let noFaceIdEnrolled = "No Face ID is enrolled. Please add a face in Settings to use biometric login."
@@ -130,6 +130,9 @@ struct EntryScreenStrings {
     static let categoryFieldLabel = "Category"
     static let tagFieldLabel = "Tags"
     static let addEntry = "Add Entry"
+    static let expenseDetails = "Expense Details"
+    static let categoryBreakdown = "Category Breakdown"
+    static let noExpenseData = "No expense data available"
     static func entryTitle(_ isEdit: Bool) -> String {
         return isEdit ? "Edit Entry" : "Create Entry"
     }

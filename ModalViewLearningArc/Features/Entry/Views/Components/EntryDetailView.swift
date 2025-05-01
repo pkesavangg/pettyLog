@@ -39,7 +39,7 @@ struct EntryDetailView: View {
             // Category
             if let category = category {
                 HStack(spacing: 8) {
-                    CategoryIconView(iconName: category.icon)
+                    CategoryIconView(iconName: category.icon, displayColor: category.displayColor)                        
                     Text(category.name)
                         .font(.subheadline)
                         .foregroundColor(theme.onSurface)
@@ -53,7 +53,7 @@ struct EntryDetailView: View {
                     showAddButton: false
                 ) { tag in
                     Text(tag.name)
-                        .pillStyle(backgroundColor: tag.displayColor, foregroundColor: .white)
+                        .pillStyle(backgroundColor: tag.displayColor)
                 } onAddTapped: {}
             }
 

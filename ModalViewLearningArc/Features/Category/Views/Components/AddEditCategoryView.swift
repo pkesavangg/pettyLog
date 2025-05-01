@@ -47,14 +47,14 @@ struct AddEditCategoryView: View {
         VStack {
             VStack {
                 HStack(alignment: .top) {
-//                    Button {
-//                        showColorSelection = true
-//                    } label: {
-//                        Circle()
-//                            .fill(displayColor)
-//                            .frame(width: 30, height: 30)
-//                    }
-//                    .padding(.top, .p10)
+                    Button {
+                        showColorSelection = true
+                    } label: {
+                        Circle()
+                            .fill(displayColor)
+                            .frame(width: 30, height: 30)
+                    }
+                    .padding(.top, .p10)
                     VStack {
                         CustomTextField(value: $categoryName, placeholder: lang.categoryFieldPlaceholder, inputType: .text,
                                         isDirty: $isFormDirty)

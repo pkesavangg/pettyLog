@@ -21,7 +21,7 @@ struct CategoryScreen: View {
                         router.navigate(to: .addEditCategory(category))
                     } label: {
                         HStack {
-                            CategoryIconView(iconName: category.icon)
+                            CategoryIconView(iconName: category.icon, displayColor: category.displayColor)
                             Text(category.name)
                                 .foregroundColor(theme.onSurface)
                             Spacer()

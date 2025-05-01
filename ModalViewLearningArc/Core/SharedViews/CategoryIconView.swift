@@ -10,19 +10,20 @@ import SwiftUI
 
 struct CategoryIconView: View {
     let iconName: String
+    let displayColor: Color
     
     @Environment(\.appTheme) private var theme
     
     var body: some View {
         Circle()
-            .fill(theme.primary.opacity(0.85))
+            .fill(displayColor.opacity(0.85))
             .frame(width: 30, height: 30)
             .overlay {
                 Image(systemName: iconName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 15, height: 15)
-                    .foregroundColor(theme.onPrimary)
+                    .foregroundColor(.black)
             }
     }
 }
@@ -30,7 +31,7 @@ struct CategoryIconView: View {
 
 // MARK: - Preview
 #Preview {    
-    CategoryIconView(iconName: "star.fill")
+    CategoryIconView(iconName: "star.fill", displayColor: .red)
         .environmentObject(ThemeManager.shared) // Provide the ThemeManager environment object
 }
 

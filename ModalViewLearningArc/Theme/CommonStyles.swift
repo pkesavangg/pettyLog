@@ -95,7 +95,7 @@ extension View {
     
     func pillStyle(
         backgroundColor: Color? = nil,
-        foregroundColor: Color? = nil
+        foregroundColor: Color? = .black
     ) -> some View {
         self.modifier(PillStyleModifier(backgroundColor: backgroundColor, foregroundColor: foregroundColor))
     }

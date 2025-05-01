@@ -18,7 +18,7 @@ struct TagChipView: View {
             .padding(.horizontal, .p12)
             .padding(.vertical, .p6)
             .background(tag.displayColor)
-            .foregroundColor(theme.onPrimary)
+            .foregroundColor(.black)
             .clipShape(Capsule())
     }
 }

@@ -55,7 +55,7 @@ struct EntryListRowView: View {
                 // Show Category Icon
                 VStack(spacing: 15) {
                     if let category = selectedCategory {
-                        CategoryIconView(iconName: category.icon)
+                        CategoryIconView(iconName: category.icon, displayColor: category.displayColor)
                     }
                     
                     Image(systemName: entry.imageURLs.isEmpty ? AppAssets.photoWithExclamationMark : AppAssets.photo)
