@@ -114,6 +114,51 @@ final class EntryAggregateModel {
     var entries: [EntryModel] = []
     var isLoading: Bool = true
 
+    // Month-based filtering
+    var selectedMonth: Date = Date().startOfMonth()
+
+    // Method to find the latest month with entries
+    func findLatestMonthWithEntries() -> Date {
+        let dates = entries.compactMap { entry in
+            DateFormatter.fullTimestampFormatter.date(from: entry.date)
+        }
+
+        if let latestDate = dates.max() {
+            return latestDate.startOfMonth()
+        }
+
+        return Date().startOfMonth()
+    }
+
+    // Computed property to get entries for the selected month
+    var entriesForSelectedMonth: [EntryModel] {
+        entries.filter { entry in
+            guard let entryDate = DateFormatter.fullTimestampFormatter.date(from: entry.date) else {
+                return false
+            }
+            return entryDate.isSameMonth(as: selectedMonth)
+        }
+    }
+
+    // Computed property to calculate total expense for the selected month
+    var totalExpenseForSelectedMonth: Double {
+        entriesForSelectedMonth.reduce(0) { $0 + $1.amount }
+    }
+
+    // Computed property to get all available months from entries
+    var availableMonths: [Date] {
+        let dates = entries.compactMap { entry in
+            DateFormatter.fullTimestampFormatter.date(from: entry.date)
+        }
+
+        guard let oldestDate = dates.min(),
+              let newestDate = dates.max() else {
+            return [Date().startOfMonth()]
+        }
+
+        return Date.monthsBetween(start: oldestDate, end: newestDate).reversed()
+    }
+
     init(authModel: AuthAggregateModel,
          categoryModel: CategoryAggregateModel,
          tagModel: TagAggregateModel) {
@@ -141,6 +186,11 @@ final class EntryAggregateModel {
 
         do {
             entries = try await service.getEntries()
+
+            // Select the latest month with entries if there are any
+            if !entries.isEmpty {
+                selectedMonth = findLatestMonthWithEntries()
+            }
         } catch {
             print("Failed to load entries: \(error)")
         }

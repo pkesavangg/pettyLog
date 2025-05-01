@@ -145,6 +145,10 @@ struct EntryScreenStrings {
     static let selectedImages = "Selected Images:"
     static let billNotAttached = "Bill not attached"
     static let bills = "Bills"
+    static let totalExpense = "Total Expense"
+    static func entriesCount(_ entriesCount: Int) -> String {
+        return "\(entriesCount) \(entriesCount == 1 ? "entry" : "entries")"
+    }
 }
 
 // MARK: - SettingScreenStrings.swift

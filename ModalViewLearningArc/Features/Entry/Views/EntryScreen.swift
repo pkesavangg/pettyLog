@@ -12,9 +12,27 @@ struct EntryScreen: View {
     @StateObject var router: Router<EntryRoute> = .init()
     @Environment(\.appTheme) private var theme
     let lang = EntryScreenStrings.self
+
     var body: some View {
         RoutingView(stack: $router.stack) {
-            VStack {
+            VStack(spacing: 0) {
+                // Month selector at the top
+                if !entryModel.entries.isEmpty {
+                    getMonthView()
+                    // Total expense header
+                    if !entryModel.entriesForSelectedMonth.isEmpty && !entryModel.isLoading {
+                        
+                        MonthTotalHeaderView(
+                            totalAmount: entryModel.totalExpenseForSelectedMonth,
+                            entriesCount: entryModel.entriesForSelectedMonth.count
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .padding(.top, .p8)
+                        .padding(.horizontal)
+                    }
+                }
+
+                // Entries for selected month
                 if entryModel.entries.isEmpty && !entryModel.isLoading {
                     List {
                         Text(lang.noEntriesAvailable)
@@ -22,19 +40,28 @@ struct EntryScreen: View {
                             .fontWeight(.semibold)
                             .foregroundColor(theme.onSurface)
                     }
+                } else if entryModel.entriesForSelectedMonth.isEmpty && !entryModel.isLoading {
+                    List {
+                        Text("No entries for \(entryModel.selectedMonth.formattedMonthYear())")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.onSurface)
+                    }
                 } else {
-                    RedactableList(isLoading: entryModel.isLoading,
-                                   placeholderCount: 5) {
-                        ForEach(entryModel.entries) { entry in
-                            Button {
-                                router.navigate(to: .entryDetail(entry))
-                            } label: {
-                                EntryListRowView(
-                                    entry: entry,
-                                    categories: entryModel.getCategories(),
-                                    tags: entryModel.getTags()
-                                )
+                    Group {
+                        if entryModel.isLoading {
+                            RedactableList(isLoading: true, placeholderCount: 5) {
+                                EmptyView()
                             }
+                        } else {
+                            DateGroupedEntryListView(
+                                entries: entryModel.entriesForSelectedMonth,
+                                categories: entryModel.getCategories(),
+                                tags: entryModel.getTags(),
+                                onEntryTap: { entry in
+                                    router.navigate(to: .entryDetail(entry))
+                                }
+                            )
                         }
                     }
                 }
@@ -49,7 +76,7 @@ struct EntryScreen: View {
                             Image(systemName: AppAssets.lineDecrease)
                                 .foregroundColor(theme.primary)
                         }
-                        
+
                         Button {
                             router.navigate(to: .addEditEntry(nil))
                         } label: {
@@ -62,6 +89,17 @@ struct EntryScreen: View {
         }
         .environmentObject(router)
     }
+
+    public func getMonthView() -> some View {
+        @Bindable var bindableTestViewModel = entryModel
+
+        return MonthSelectorView(
+            selectedMonth: $bindableTestViewModel.selectedMonth,
+            availableMonths: entryModel.availableMonths
+        )
+        .padding(.top, 8)
+    }
+
 }
 
 #Preview {
