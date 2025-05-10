@@ -7,15 +7,6 @@
 
 import SwiftUI
 
-struct CategoryExpense: Identifiable {
-    let id = UUID()
-    let categoryId: String
-    let categoryName: String
-    let amount: Double
-    let color: Color
-    let percentage: Double
-}
-
 struct ExpenseDetailsView: View {
     let selectedMonth: Date
     let entries: [EntryModel]
@@ -63,16 +54,10 @@ struct ExpenseDetailsView: View {
                     // Month and total
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(selectedMonth.formattedMonthYear())
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(theme.onSurface)
-
                             Text("Total: ₹\(String(format: "%.2f", totalAmount))")
                                 .font(.headline)
                                 .foregroundColor(theme.onSurface.opacity(0.8))
                         }
-
                         Spacer()
                     }
                     .padding(.bottom, 16) // Increased bottom padding
@@ -126,7 +111,7 @@ struct ExpenseDetailsView: View {
                 }
                 .padding()
             }
-            .navigationTitle(lang.expenseDetails)
+            .navigationTitle("\(selectedMonth.formattedMonthYear()) - \(lang.expenseDetails)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -142,74 +127,6 @@ struct ExpenseDetailsView: View {
     }
 }
 
-struct PieChartView: View {
-    let categoryExpenses: [CategoryExpense]
-
-    var body: some View {
-        ZStack {
-            ForEach(0..<categoryExpenses.count, id: \.self) { index in
-                PieSliceView(
-                    startAngle: startAngle(for: index),
-                    endAngle: endAngle(for: index),
-                    color: categoryExpenses[index].color
-                )
-            }
-
-            // No center circle - removed as requested
-        }
-    }
-
-    private func startAngle(for index: Int) -> Double {
-        if index == 0 {
-            return 0
-        }
-
-        let previousSlices = categoryExpenses[0..<index]
-        let previousTotal = previousSlices.reduce(0) { $0 + $1.percentage }
-        return previousTotal * 3.6 // Convert percentage to degrees (360 / 100 = 3.6)
-    }
-
-    private func endAngle(for index: Int) -> Double {
-        let previousSlices = categoryExpenses[0...index]
-        let previousTotal = previousSlices.reduce(0) { $0 + $1.percentage }
-        return previousTotal * 3.6 // Convert percentage to degrees
-    }
-}
-
-struct PieSliceView: View {
-    let startAngle: Double
-    let endAngle: Double
-    let color: Color
-
-    var body: some View {
-        GeometryReader { geometry in
-            Path { path in
-                let center = CGPoint(
-                    x: geometry.size.width / 2,
-                    y: geometry.size.height / 2
-                )
-                let radius = min(geometry.size.width, geometry.size.height) / 2
-
-                // Add a small gap between slices by reducing the arc slightly
-                let gapAngle = 2.0 // 2 degree gap
-                let adjustedStartAngle = startAngle + (gapAngle / 2)
-                let adjustedEndAngle = endAngle - (gapAngle / 2)
-
-                path.move(to: center)
-                path.addArc(
-                    center: center,
-                    radius: radius,
-                    startAngle: .degrees(adjustedStartAngle - 90), // -90 to start from top
-                    endAngle: .degrees(adjustedEndAngle - 90),
-                    clockwise: false
-                )
-                path.closeSubpath()
-            }
-            .fill(color)
-        }
-    }
-}
-
 #Preview {
     ExpenseDetailsView(
         selectedMonth: Date(),
@@ -218,7 +135,11 @@ struct PieSliceView: View {
             EntryModel(id: "2", date: "2025-04-16T12:00:00+0000", amount: 300, description: "Dinner", imageURLs: [], category: "eating_out", tags: []),
             EntryModel(id: "3", date: "2025-04-17T12:00:00+0000", amount: 200, description: "Gas", imageURLs: [], category: "transport", tags: [])
         ],
-        categories: [],
+        categories: [
+            CategoryModel(id: "groceries", name: "Groceries", icon: "cart", color: "#00FF00", dateCreated: Date().ISO8601Format(), isDefault: true),
+            CategoryModel(id: "eating_out", name: "Eating Out", icon: "fork.knife", color: "#0000FF", dateCreated: Date().ISO8601Format(), isDefault: true),
+            CategoryModel(id: "transport", name: "Transport", icon: "car", color: "#FFA500", dateCreated: Date().ISO8601Format(), isDefault: true)
+        ],
         totalAmount: 1000
     )
 }
