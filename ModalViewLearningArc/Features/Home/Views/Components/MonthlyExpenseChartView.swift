@@ -24,8 +24,52 @@ struct MonthlyExpenseChartView: View {
         VStack(alignment: .leading) {
             Text("Monthly Expenses")
                 .font(.system(size: 16, weight: .medium))
-
             Chart {
+                if let selectedEntry {
+                    RuleMark(
+                        x: .value("Selected Date", selectedEntry.date)
+                    )
+                    .foregroundStyle(.purple.opacity(0.2))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4]))
+                    .annotation(position: .top, spacing: 0, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            // Date Header
+                            HStack(spacing: 6) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text(selectedEntry.date, format: .dateTime.month().day().year())
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                            }
+
+                            Divider().background(Color.white.opacity(0.4))
+
+                            // Expense Entry
+                            HStack(spacing: 6) {
+                                Image(systemName: "creditcard")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.red)
+                                Text("Amount: $\(selectedEntry.amount, specifier: "%.2f")")
+                                    .font(.caption)
+                            }
+                        }
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.purple.opacity(0.9), .indigo.opacity(0.85)]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                        )
+                        .frame(width: 180)
+                    }
+                }
+                
                 // Expense lines and points
                 ForEach(monthlyExpenses) { item in
                     LineMark(
@@ -57,6 +101,8 @@ struct MonthlyExpenseChartView: View {
                             .foregroundColor(.orange)
                     }
             }
+            // Enable selection interaction
+            .chartXSelection(value: $selectedDate.animation(.easeInOut))
             .chartXAxis {
                 AxisMarks(values: monthlyExpenses.map { $0.date }) { value in
                     if let date = value.as(Date.self) {
