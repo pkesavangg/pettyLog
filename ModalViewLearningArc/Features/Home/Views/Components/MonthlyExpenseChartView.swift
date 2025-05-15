@@ -14,10 +14,11 @@ struct MonthlyExpenseChartView: View {
 
     @Environment(\.appTheme) private var theme
     @State private var selectedDate: Date?
+    @State private var lastSelectedDate: Date?
 
     var selectedEntry: MonthlyExpense? {
-        guard let selectedDate else { return nil }
-        return monthlyExpenses.first { Calendar.current.isDate($0.date, inSameDayAs: selectedDate) }
+        guard let date = lastSelectedDate else { return nil }
+        return monthlyExpenses.first { Calendar.current.isDate($0.date, inSameDayAs: date) }
     }
 
     var body: some View {
@@ -103,6 +104,12 @@ struct MonthlyExpenseChartView: View {
             }
             // Enable selection interaction
             .chartXSelection(value: $selectedDate.animation(.easeInOut))
+            .onChange(of: selectedDate) { newValue in
+                if let newValue {
+                    lastSelectedDate = newValue
+                }
+            }
+
             .chartXAxis {
                 AxisMarks(values: monthlyExpenses.map { $0.date }) { value in
                     if let date = value.as(Date.self) {
